@@ -16,6 +16,18 @@ export default async function AuthButton() {
     await supabase.auth.signOut();
     return redirect("/login");
   };
+  const handleLogin = async () => {
+    "use server"
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: 'http://localhost:3000',
+      },
+    });
+    if (error) {
+      console.log('Error: ', error.message);
+    }
+  };
 
   return user ? (
     <div className="flex items-center gap-4">
@@ -27,11 +39,11 @@ export default async function AuthButton() {
       </form>
     </div>
   ) : (
-    <Link
-      href="/login"
-      className="py-2 px-3 flex rounded-md no-underline bg-btn-background hover:bg-btn-background-hover"
-    >
-      Login
-    </Link>
+    <>
+      <button onClick={handleLogin} className="py-2 px-4 rounded-md no-underline bg-btn-background hover:bg-btn-background-hover">
+      Login with GitHub
+    </button>
+    </>
+
   );
 }
