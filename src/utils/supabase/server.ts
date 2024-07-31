@@ -27,3 +27,11 @@ export function createClient() {
     }
   )
 }
+
+export const supabase = createClient()
+export const getUser = async () => {
+  const supabase = createClient()
+
+  const { data, error } = await supabase.auth.getUser()
+  return { data, error}
+}
