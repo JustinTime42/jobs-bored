@@ -1,3 +1,5 @@
+'use server'
+
 export const getOrganizations = async (organization_ids: string[]) => {
     try {
         const requestHeaders = {
@@ -10,7 +12,7 @@ export const getOrganizations = async (organization_ids: string[]) => {
             per_page: 10,
             organization_ids: [organization_ids]
         };
-        let allOrganizations = [] as any[];
+        let allOrganizations = {} as any;
         let hasMore = true;
 
         while (hasMore) {
@@ -25,7 +27,8 @@ export const getOrganizations = async (organization_ids: string[]) => {
             }
 
             const responseData = await response.json();
-            allOrganizations = allOrganizations.concat(responseData.organizations || []);
+
+            allOrganizations = allOrganizations.accounts.concat(responseData.accounts || []);
 
             if (responseData.organizations.length < data.per_page) {
                 hasMore = false;
@@ -34,7 +37,7 @@ export const getOrganizations = async (organization_ids: string[]) => {
             }
         }
 
-        return allOrganizations;
+        return allOrganizations.accounts;
     } catch (e) {
         console.error(`Failed to access: ${e}`);
         return []

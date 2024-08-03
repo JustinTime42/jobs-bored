@@ -5,11 +5,13 @@ import Input from '@/src/components/input/Input';
 import { useRouter } from 'next/navigation';
 import { getUserDetails, updateUserDetails } from '@/src/api/user';
 import Button from '@/src/components/button/Button';
+import { addLocation } from '@/src/api/locations';
 
 const UserAccount = () => {
     const { user, loading, error, fetchUser } = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
     const [ newLocation, setNewLocation ] = useState('');
+    const [ organizations, setOrganizations ] = useState<any[]>([]);
     const router = useRouter();
 
     useEffect(() => {
@@ -24,11 +26,13 @@ const UserAccount = () => {
         }
     },[user]);
 
-    const handleAddLocation = () => {
+    const handleAddLocation = async() => {
         updateUserDetails({...userDetails, locations: [...userDetails.locations, newLocation]}).then((data) => {
             console.log('Location added', data);
             setUserDetails(data);
         });
+        await addLocation(newLocation);
+        
     }
 
     if (loading) {
