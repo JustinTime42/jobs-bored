@@ -21,7 +21,7 @@ export const signInWithGitHub = async () => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: process.env.NEXT_PUBLIC_REDIRECT_URL || 'http://localhost:3000',
+      redirectTo: process.env.NEXT_PUBLIC_REDIRECT_URL || 'https://jobs-bored.vercel.app/',
     },
   });
   if (error) throw error;
