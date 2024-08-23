@@ -6,19 +6,28 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^5.16.7",
+    "@mui/material": "^5.16.7",
+    "@react-google-maps/api": "^2.19.3",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.4.0",
     "@supabase/supabase-js": "^2.45.0",
     "autoprefixer": "10.4.17",
     "geist": "^1.2.1",
+    "lodash": "^4.17.21",
     "next": "latest",
     "postcss": "8.4.33",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-places-autocomplete": "^7.3.0",
     "tailwindcss": "3.4.1",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "use-places-autocomplete": "^4.0.1"
   },
   "devDependencies": {
+    "@types/google.maps": "^3.55.12",
     "@types/node": "20.11.5",
     "@types/react": "18.2.48",
     "@types/react-dom": "18.2.18",

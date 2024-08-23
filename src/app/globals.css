@@ -26,11 +26,11 @@
   }
 }
 a {
-  padding: 4px;
+  padding: 8px;
   border-radius: 4px;
 }
 a:hover {
-  padding: 4px;
+  padding: 8px;
   border-radius: 4px;
   background-color: hsl(var(--btn-background-hover));
 }

@@ -11,7 +11,8 @@ const validOrganizationKeys = [
 	"twitter_url",
 	"facebook_url",
 	"primary_phone",
-	"hires_in"
+	"hires_in",
+	"logo_url",
 ];
 const validPersonKeys = [
 	"id",
@@ -38,8 +39,9 @@ export const getLocalPeople = async (location: string) => {
         let page = 1;
         const perPage = 100; // Number of results per page
         let totalPages = 1;
-      
-        while (page <= 1) {
+      console.log("getting people from apollo");
+	  console.log("location: ", location);
+        while (page <= 10 && page <= totalPages) {
 			const response = await fetch("https://api.apollo.io/v1/mixed_people/search", {
 				method: 'POST',
 				headers: {
@@ -60,7 +62,7 @@ export const getLocalPeople = async (location: string) => {
 				person.primary_phone = person.phone_numbers?.[0]?.sanitized_number;
 				if (person.organization) {
 					person.organization.primary_phone = person.organization?.primary_phone?.sanitized_number
-					person.organization.hires_in = [location];
+					person.organization.hires_in = [`${person.city} ${person.state} ${person.country}`];
 					person.organization = Object.keys(person.organization).reduce((acc:any, key) => {
 						if (validOrganizationKeys.includes(key)) {
 							acc[key] = person.organization[key];
@@ -79,16 +81,18 @@ export const getLocalPeople = async (location: string) => {
 			if (response.ok) {
 				allPeople = allPeople.concat(people);
 				totalPages = data.pagination.total_pages;
+				console.log("Total pages: ", totalPages);
 				page += 1;
 			} else {
 				console.error('Error fetching data:', data);
 				break;
 			}
         }
+		console.log('People found:', allPeople.length);
         return allPeople;
         
     } catch (e) {
-        console.error(e);
+        console.error("Apollo People", e);
         return []
     }
 };

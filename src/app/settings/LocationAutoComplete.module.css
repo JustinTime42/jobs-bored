@@ -1,0 +1,10 @@
+.suggestion {
+    padding: 10px;
+    background-color: --background;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+}
+
+.suggestion:hover {
+    background-color: hsl(var(--btn-background-hover));
+}

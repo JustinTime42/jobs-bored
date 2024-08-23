@@ -3,14 +3,16 @@ import React, { useEffect, useState } from 'react';
 import { useUserContext } from '../context/UserContext';
 import Input from '@/src/components/input/Input';
 import { useRouter } from 'next/navigation';
-import { getUserDetails, updateUserDetails } from '@/src/api/user';
+import { getUserDetails } from '@/src/api/user';
 import Button from '@/src/components/button/Button';
 import { addLocation } from '@/src/api/locations';
+import { getLocalOrganizations } from '@/src/api/organizations';
+import Link from 'next/link';
+import styles from './page.module.css';
 
-const UserAccount = () => {
+const Dashboard = () => {
     const { user, loading, error, fetchUser } = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
-    const [ newLocation, setNewLocation ] = useState('');
     const [ organizations, setOrganizations ] = useState<any[]>([]);
     const router = useRouter();
 
@@ -22,18 +24,20 @@ const UserAccount = () => {
         if (user) {
             getUserDetails(user.id).then((data) => {
                 setUserDetails(data);
+                data.locations
             });
         }
     },[user]);
 
-    const handleAddLocation = async() => {
-        updateUserDetails({...userDetails, locations: [...userDetails.locations, newLocation]}).then((data) => {
-            console.log('Location added', data);
-            setUserDetails(data);
-        });
-        await addLocation(newLocation);
-        
-    }
+    useEffect(() => {
+        if (userDetails?.locations) {
+            const locations = [...userDetails.locations];
+            getLocalOrganizations(locations).then((data) => {
+                setOrganizations(data);
+                console.log(data)
+            });
+        }
+    }, [JSON.stringify(userDetails.locations)]);
 
     if (loading) {
         return <p>Loading...</p>;
@@ -46,24 +50,14 @@ const UserAccount = () => {
     }
     return (
         <div>
-            <h1>User Account</h1>
-            <p>Username: {user?.user_metadata.preferred_username}</p>
-            <p>Email: {user?.email}</p>
-            {userDetails?.locations && userDetails.locations.map((location: string, i:number) => (
-                <p key={i}>{location}</p>
+            {organizations.map((organization) => (
+                <div className={styles.org} key={organization.id}>
+                    <Link href={`/dashboard/${organization.id}`}>{organization.name}</Link>
+                </div>
             ))}
-            <Input 
-                type="text" 
-                label="Add Location"
-                value={newLocation}
-                onChange={(e) => setNewLocation(e.target.value)}
-            />
-            <Button 
-                onClick={handleAddLocation}
-                text="Add Location"
-            />
+
         </div>
     );
 };
 
-export default UserAccount;
+export default Dashboard;

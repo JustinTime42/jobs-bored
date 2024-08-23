@@ -34,6 +34,10 @@ export interface EmploymentHistory {
     facebook_url: string | null;
     primary_phone: string;    
     hires_in?: string[];
+    logo_url: string;
+    emails: string[];
+    phone: string;
+    people?: Person[];
   }
   
   export interface Account {
