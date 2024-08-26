@@ -48,6 +48,14 @@ const Dashboard = () => {
     if (!user) {
         return router.push('/');
     }
+    // enable this after creating a better hook for a loading state
+    // if (organizations.length === 0) {
+    //     return (
+    //         <div>
+    //             <p>No organizations found. Add a location in your account settings.</p>
+    //         </div>
+    //     );
+    // }
     return (
         <div>
             {organizations.map((organization) => (

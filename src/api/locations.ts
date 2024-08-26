@@ -18,9 +18,9 @@ export const addLocation = async (location: string) => {
         })
         await saveOrganizations(organizations);
         console.log("Finished saving organizations")
-        await savePeople(localPeople.filter(person => person.organization.id));
-        const urls = organizations.map(organization => organization.website_url);
-        const lambdaKey = process.env.LAMDA_KEY || ''; 
+        await savePeople(localPeople.filter(person => person.organization?.id));
+        // const urls = organizations.map(organization => organization.website_url);
+        // const lambdaKey = process.env.LAMDA_KEY || ''; 
         // fetch("https://yc3errea4a.execute-api.us-east-1.amazonaws.com/default/scraper_http_handler", {
         //     method: "POST",
         //     headers: {
