@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 p,
-li {
+li,
+a {
   @apply font-inter;
   font-size: 18px;
   color: #333333;
