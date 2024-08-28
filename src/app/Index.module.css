@@ -1,0 +1,164 @@
+.benefits {
+  background-color: #e0e0e0;
+  text-align: center;
+  border-radius: 50px;
+  margin-top: 50px;
+}
+
+.heroshotContainer {
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.hook {
+  text-align: center;
+}
+
+.about {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.aboutText {
+  margin: 20px;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.heroCard {
+  padding: 20px;
+}
+
+.logo {
+  border-radius: 16px;
+}
+
+.selfie {
+  border-radius: 50%;
+}
+
+#demoSection {
+  text-align: center;
+  margin-top: 50px;
+}
+
+@media only screen and (max-width: 576px) {
+  .benefits {
+    display: block;
+    text-align: center;
+  }
+  .hero {
+    display: block;
+  }
+  .heroCard {
+    width: 100%;
+  }
+  .heroshotContainer {
+    height: 300px;
+    width: 100%;
+    overflow: hidden;
+  }
+  .heroImage {
+    width: 100%;
+    object-position: 0% 100%;
+  }
+  .hook {
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: repeat(6, auto);
+  }
+  .about {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+  .aboutText {
+    margin: 20px;
+  }
+}
+
+@media only screen and (min-width: 576px) {
+  .benefits {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-bottom: 50px;
+    gap: 20px;
+  }
+  .hero {
+    display: flex;
+    height: 600px;
+    width: 100%;
+    align-items: center;
+  }
+  .feature {
+    padding: 20px;
+  }
+  .features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, auto);
+  }
+  .heroCard {
+    width: 60%;
+    margin: 0 auto;
+  }
+  .heroshotContainer {
+    width: 40%;
+    overflow: hidden;
+  }
+  .heroImage {
+    width: 100%;
+    height: auto;
+  }
+  .hook {
+    width: 50%;
+    margin: 0 auto;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, auto);
+  }
+  .about {
+    width: 50%;
+  }
+  .hero {
+    display: flex;
+    align-items: center;
+    height: 600px;
+    width: 100%;
+  }
+  .heroImage {
+    display: flex;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  .heroshotContainer {
+    width: 60%;
+    margin-right: 3em;
+    margin-top: 3em;
+    overflow: hidden;
+    max-width: 600px;
+  }
+  .heroCard {
+    width: 40%;
+  }
+  .hook {
+    width: 50%;
+    margin: 0 auto;
+  }
+}

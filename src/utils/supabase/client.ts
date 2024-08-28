@@ -11,17 +11,20 @@ export const supabase = createClient()
 
 export const getUser = async () => {
   const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) {
+  if (!user) {
+    return null;
+  }
+  if (error) {
     throw new Error("Auth session missing!");
   }
   return user;
 };
 
 export const signInWithGitHub = async () => {
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: process.env.NEXT_PUBLIC_REDIRECT_URL || 'https://jobs-bored.vercel.app/',
+      redirectTo: process.env.NEXT_PUBLIC_REDIRECT_URL,
     },
   });
   if (error) throw error;

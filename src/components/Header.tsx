@@ -14,7 +14,7 @@ export default function Header() {
 
   return (
       <nav className="w-full flex justify-center border-b border-b-foreground/10">
-        <Image src="/logo.png" alt="Logo" width={128} height={128} />
+        <Link href='/'><Image src="/logo.png" alt="Logo" width={128} height={128} /></Link>
         <div className="w-full max-w-4xl flex justify-end gap-10 items-center p-3 text-sm">
           {user && (
             <Link href="/dashboard">

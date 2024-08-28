@@ -9,11 +9,13 @@ import { addLocation } from '@/src/api/locations';
 import { getLocalOrganizations } from '@/src/api/organizations';
 import Link from 'next/link';
 import styles from './page.module.css';
+import useLocalOrganizations from '../hooks/useLocalOrgs';
+import ExternalLink from '@/src/components/Link/ExternalLink';
 
 const Dashboard = () => {
-    const { user, loading, error, fetchUser } = useUserContext();
+    const { user, loading: userLoading, error: userError, fetchUser } = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
-    const [ organizations, setOrganizations ] = useState<any[]>([]);
+    const { organizations, loading: orgLoading, error: orgError } = useLocalOrganizations(userDetails.locations);
     const router = useRouter();
 
     useEffect(() => {
@@ -24,38 +26,28 @@ const Dashboard = () => {
         if (user) {
             getUserDetails(user.id).then((data) => {
                 setUserDetails(data);
-                data.locations
             });
         }
-    },[user]);
+    },[JSON.stringify(user)]);
 
-    useEffect(() => {
-        if (userDetails?.locations) {
-            const locations = [...userDetails.locations];
-            getLocalOrganizations(locations).then((data) => {
-                setOrganizations(data);
-                console.log(data)
-            });
-        }
-    }, [JSON.stringify(userDetails.locations)]);
-
-    if (loading) {
+    if (userLoading || orgLoading) {
         return <p>Loading...</p>;
     }
-    if (error) {
-        return <p>Error: {error.message}</p>;
+    if (userError || orgError) {
+        return <p>Error: {userError.message || orgError.message}</p>;
     }
     if (!user) {
         return router.push('/');
     }
     // enable this after creating a better hook for a loading state
-    // if (organizations.length === 0) {
-    //     return (
-    //         <div>
-    //             <p>No organizations found. Add a location in your account settings.</p>
-    //         </div>
-    //     );
-    // }
+    if (userDetails.locations.length === 0) {
+        return (
+            <div>
+                <h1 className='font-inter'>Dashboard</h1>
+                <p>No organizations found. Add a location in your<ExternalLink href='/settings'>account settings</ExternalLink>.</p>
+            </div>
+        );
+    }
     return (
         <div>
             {organizations.map((organization) => (
@@ -63,7 +55,6 @@ const Dashboard = () => {
                     <Link href={`/dashboard/${organization.id}`}>{organization.name}</Link>
                 </div>
             ))}
-
         </div>
     );
 };

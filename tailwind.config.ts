@@ -14,6 +14,11 @@ module.exports = {
           "background-hover": "hsl(var(--btn-background-hover))",
         },
       },
+      fontFamily: {
+        inter: ['var(--font-inter)'],
+        rubik: ['var(--font-rubik)'],
+        raleway: ['var(--font-raleway)'],
+      },
     },
   },
   plugins: [],

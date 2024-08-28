@@ -1,4 +1,5 @@
-import { GeistSans } from "geist/font/sans";
+import { Inter, Rubik, Raleway } from 'next/font/google'
+
 import "./globals.css";
 import { UserProvider } from "./context/UserContext";
 import Header from "@/src/components/Header";
@@ -13,13 +14,31 @@ export const metadata = {
   description: "Tools to help you get a job in tech",
 };
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable:'--font-inter',
+  display: 'swap',
+})
+ 
+const rubik = Rubik({
+  subsets: ['latin'],
+  variable:'--font-rubik',
+  display: 'swap',
+})
+
+const raleway = Raleway({
+  subsets: ['latin'],
+  variable:'--font-raleway',
+  display: 'swap',
+})
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={GeistSans.className}>
+    <html lang="en" className={`${inter.variable} ${rubik.variable} ${raleway.variable}`}>
       <body className="bg-background text-foreground">
         <main className="min-h-screen flex flex-col items-center">
           <UserProvider>
