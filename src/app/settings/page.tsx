@@ -22,7 +22,6 @@ const UserAccount = () => {
     useEffect(() => {
         if (user) {
             getUserDetails(user.id).then((data) => {
-                console.log('User details:', data);
                 setUserDetails(data);
             });
         }
@@ -42,9 +41,9 @@ const UserAccount = () => {
                 locations: [...userDetails.locations, personLocation],
             });
             setUserDetails(updatedDetails);
-            console.log('Location added', updatedDetails);
+            setNewLocation('');
         } catch (error) {
-            console.error('Error adding location:', error);
+            throw error
         }
     };
 

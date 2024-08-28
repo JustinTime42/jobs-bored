@@ -16,6 +16,9 @@ export const addLocation = async (location: string) => {
                 organizations.push(person.organization);
             }
         })
+        if (organizations.length === 0) {
+            throw new Error("No organizations found in this location");
+        }
         await saveOrganizations(organizations);
         console.log("Finished saving organizations")
         await savePeople(localPeople.filter(person => person.organization?.id));
@@ -33,6 +36,6 @@ export const addLocation = async (location: string) => {
         return localPeople;   
     }
     catch (e) {
-        throw new Error(`Location error: ${e}`);
+        throw new Error(`${e}`);
     }
 } 

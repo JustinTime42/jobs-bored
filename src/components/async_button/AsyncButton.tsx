@@ -1,6 +1,8 @@
 import { Alert, CircularProgress } from "@mui/material";
 import React, { useState } from "react";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloseIcon from '@mui/icons-material/Close';
+
 import styles from './AsyncButton.module.css';
 interface Props {
   asyncAction: () => Promise<any>;
@@ -29,7 +31,7 @@ const AsyncButton = ({
         setSuccess(true);
         setTimeout(() => {
           setSuccess(false);
-        }, 1300);
+        }, 1500);
       })
       .catch((err) => {
         setError(err.message);
@@ -46,17 +48,19 @@ const AsyncButton = ({
         disabled={loading}
         style={style}
         className={styles.button}
-
       >
         {label}
         {loading && (
-          <CircularProgress size="20px" />
+          <CircularProgress color='secondary' size="20px" />
         )}
-        {success && !loading && <CheckCircleIcon />}
+        {success && !loading && <CheckCircleIcon color='secondary' />}
       </button>
       {error && (
         <Alert severity="error" >
           {error}
+          <button onClick={() => setError(null)}>
+            <CloseIcon  />
+          </button>
         </Alert>
       )}
     </>
