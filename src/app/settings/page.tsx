@@ -7,6 +7,7 @@ import { getUserDetails, updateUserDetails } from '@/src/api/user';
 import LocationAutoComplete from './LocationAutoComplete';
 import AsyncButton from '@/src/components/async_button/AsyncButton';
 import { addLocation } from '@/src/api/locations';
+import Location from '@/src/components/location/Location';
 
 const UserAccount = () => {
     const { user, loading, error, fetchUser } = useUserContext();
@@ -21,12 +22,17 @@ const UserAccount = () => {
     useEffect(() => {
         if (user) {
             getUserDetails(user.id).then((data) => {
+                console.log('User details:', data);
                 setUserDetails(data);
             });
         }
-    }, [user]);
+    }, [JSON.stringify(user)]);
 
     const handleAddLocation = async () => {
+        if (!newLocation) {
+            alert('Please select a valid location');
+            return;
+        }
         try {
             const localPeople = await addLocation(newLocation);
             const person = localPeople.find((person: any) => person.city && person.state && person.country);
@@ -40,6 +46,14 @@ const UserAccount = () => {
         } catch (error) {
             console.error('Error adding location:', error);
         }
+    };
+
+    const handleRemovelocation = async (location: string) => {
+        const updatedDetails = await updateUserDetails({
+            ...userDetails,
+            locations: userDetails.locations.filter((loc: string) => loc !== location),
+        });
+        setUserDetails(updatedDetails);
     };
 
     if (loading) {
@@ -61,7 +75,7 @@ const UserAccount = () => {
             <div style={{padding: "8px", marginTop:"32px"}}>
                 <p style={{margin:"4px"}}> Locations: </p>
                 {userDetails?.locations && userDetails.locations.map((location: string, i: number) => (
-                    <li key={i}>{location}</li>
+                    <Location key={i} location={location} handleRemoveLocation={handleRemovelocation} />
                 ))}
                 <div style={{marginTop:"16px"}}>
                     <LocationAutoComplete onSelectLocation={(location) => setNewLocation(location)} />

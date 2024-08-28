@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-p {
+p,
+li {
   @apply font-inter;
   font-size: 18px;
   color: #333333;

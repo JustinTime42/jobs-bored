@@ -1,0 +1,12 @@
+.location {
+  display: flex;
+  align-items: center;
+}
+
+.removeButton {
+  border-radius: 8px;
+  padding: 4px;
+}
+.removeButton:hover {
+  background-color: #e0e0e0;
+}
