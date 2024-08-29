@@ -52,7 +52,7 @@ const Dashboard = () => {
     if (userDetails.locations.length === 0) {
         return (
             <div>
-                <h1 className='font-inter'>Dashboard</h1>
+                <h1>Dashboard</h1>
                 <p>No organizations found. Add a location in your<ExternalLink href='/settings'>account settings</ExternalLink>.</p>
             </div>
         );
@@ -60,11 +60,11 @@ const Dashboard = () => {
     return (
         <div className={styles.container}>
             <div>                
-                <div>
+                <div className={styles.favorites}>
                     <h2>Favorites</h2>
                     {favoriteCompanies.length > 0 ? (
                     favoriteCompanies.map((company) => (
-                        <div key={company.details.id}>
+                        <div key={company.details.id} className={styles.org}>
                             <Link href={`/dashboard/${company.details.id}`}>{company.details.name}</Link>
                         </div>
                     ))
