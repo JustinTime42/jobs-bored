@@ -38,6 +38,7 @@ export interface EmploymentHistory {
     emails: string[];
     phone: string;
     people?: Person[];
+    user_organizations?: any[];
   }
   
   export interface Account {
@@ -103,6 +104,7 @@ export type Person = {
     country: string;
     organization_id: string;
     organization: Organization;
+    email: string;
   }
   
 export interface ApolloResponse {

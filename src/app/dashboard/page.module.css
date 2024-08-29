@@ -1,4 +1,11 @@
 .org {
-    margin: 4px;
-    padding: 4px;
+  margin: 4px;
+  padding: 4px;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
 }

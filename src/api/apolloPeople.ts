@@ -1,6 +1,7 @@
 'use server'
 
 import { Organization, Person } from "../definitions";
+import { supabaseAdmin } from "../utils/supabase/admin";
 
 const validOrganizationKeys = [
 	"id",
@@ -96,3 +97,37 @@ export const getLocalPeople = async (location: string) => {
         return []
     }
 };
+
+export const getPersonEmails = async (id: string) => {
+	try {
+		const requestHeaders = {
+			"Content-Type": "application/json",
+			"Cache-Control": "no-cache",
+			"X-Api-Key": process.env.APOLLO_API_KEY!
+		};
+		const response = await fetch("https://api.apollo.io/v1/people/match", {
+			method: 'POST',
+			headers: requestHeaders,
+			body: JSON.stringify({ id:id })
+		});
+		const responseData = await response.json();
+		const emailAddress = responseData.person.email;
+		console.log('Email:', emailAddress);
+		if (!emailAddress) {
+			await supabaseAdmin
+			.from('people').update({email: 'Email Unavailable'}).eq('id', id);
+			return '';
+		} else {
+			const {data, error} = await supabaseAdmin
+				.from('people').update({email: emailAddress}).eq('id', id);
+			if (error) {
+				throw error;
+			}
+			return emailAddress;
+		}
+
+	} catch (e) {
+		console.error('Failed to get email:', e);
+		return [];
+	}
+}

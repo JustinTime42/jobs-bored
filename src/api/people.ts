@@ -1,3 +1,4 @@
+'use server'
 import { supabaseAdmin } from "../utils/supabase/admin";
 
 export const savePeople = async (people: any[]) => {
