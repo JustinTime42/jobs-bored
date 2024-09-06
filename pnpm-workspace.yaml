@@ -1,0 +1,3 @@
+packages:
+  - "." # Refers to the root for Next.js app
+  - "functions" # Refers to the Firebase functions directory

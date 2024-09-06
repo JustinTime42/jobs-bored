@@ -39,6 +39,9 @@ const Dashboard = () => {
 
         }
     },[JSON.stringify(user)]);
+    useEffect(() => {
+        console.log(userDetails);
+    }, [userDetails]);
 
     if (userLoading || orgLoading) {
         return <p>Loading...</p>;

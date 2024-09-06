@@ -21,6 +21,7 @@ export const saveOrganizations = async (organizations: any[]) => {
 };
 
 export const getLocalOrganizations = async (locations: string[]) => {
+    console.log(locations)
     const { data, error } = await supabaseAdmin
         .from('organizations')
         .select('name, id')

@@ -31,13 +31,12 @@ const UserAccount = () => {
             alert('Please select a valid location');
             return;
         }
+        const strippedLocation = newLocation.replace(/,/g, '');
         try {
-            const localPeople = await addLocation(newLocation);
-            const person = localPeople.find((person: any) => person.city && person.state && person.country);
-            const personLocation = `${person?.city} ${person?.state} ${person?.country}`;
+            await addLocation(strippedLocation);
             const updatedDetails = await updateUserDetails({
                 ...userDetails,
-                locations: [...userDetails.locations, personLocation],
+                locations: [...userDetails.locations, strippedLocation],
             });
             setUserDetails(updatedDetails);
             setNewLocation('');

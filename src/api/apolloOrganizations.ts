@@ -9,7 +9,7 @@ export const getOrganizations = async (organization_ids: string[]) => {
         };
         const data = {
             page: 1,
-            per_page: 10,
+            per_page: 100,
             organization_ids: [organization_ids]
         };
         let allOrganizations = {} as any;

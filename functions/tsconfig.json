@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "outDir": "lib",
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2017",
+    "skipLibCheck": true
+  },
+  "compileOnSave": true,
+  "include": [
+    "src/**/*.ts"                     // Include all TypeScript files in the 'src' folder
+  ],
+  "exclude": [
+    "node_modules",                   // Exclude node_modules
+    "src/**/*.test.ts",               // Exclude test files (if any)
+    "../node_modules/@types/react",   // Explicitly exclude React types
+    "../src/frontend",                // Exclude any frontend folder (adjust path as necessary)
+    "../public"                       // Exclude public assets (adjust path as necessary)
+  ]
+}

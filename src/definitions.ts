@@ -39,6 +39,11 @@ export interface EmploymentHistory {
     phone: string;
     people?: Person[];
     user_organizations?: any[];
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    postal_code: string;
   }
   
   export interface Account {
