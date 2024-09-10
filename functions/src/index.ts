@@ -114,7 +114,7 @@ export const addLocation = onCall(async (request: any) => {
         const allOrgIds = {} as any;
         let page = 1;
         const perPage = 100;
-        let totalPages = 1;
+        let totalPages = 20;
         while (page <= 10 && page <= totalPages) {
             const response = await fetch("https://api.apollo.io/v1/mixed_people/search", {
                 method: "POST",
@@ -132,6 +132,7 @@ export const addLocation = onCall(async (request: any) => {
                         "software developer",
                         "software engineer",
                     ],
+                    organization_num_employees_ranges: ["5,5000"],
                     person_locations: [location],
                 }),
             });
@@ -146,6 +147,13 @@ export const addLocation = onCall(async (request: any) => {
                 break;
             }
         }
+        // Deduplicate allPeople based on id
+        allPeople = allPeople.reduce((uniquePeople: Person[], person: Person) => {
+            if (!uniquePeople.some((p) => p.id === person.id)) {
+                uniquePeople.push(person);
+            }
+            return uniquePeople;
+        }, []);
         allPeople = allPeople.map((person:any) => {
             if (person.organization?.id) {
                 allOrgIds[person.organization.id] = true;
@@ -158,7 +166,7 @@ export const addLocation = onCall(async (request: any) => {
         });
         const orgDetails = await getOrgDetails(Object.keys(allOrgIds));
         const allOrganizations = orgDetails.map((org: any) => {
-            org.hires_in = [location];
+            org.hires_in = [location.toLowerCase()];
             org.primary_phone = org.sanitized_phone;
             return org;
         });

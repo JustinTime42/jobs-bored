@@ -22,14 +22,16 @@ export const saveOrganizations = async (organizations: any[]) => {
 
 export const getLocalOrganizations = async (locations: string[]) => {
     console.log(locations)
+    const localities = locations.map(location => location.toLowerCase());
     const { data, error } = await supabaseAdmin
-        .from('organizations')
-        .select('name, id')
-        .overlaps('hires_in', locations);    
+    .rpc('get_organizations_with_scores', {
+        locations: locations.map(loc => loc.toLowerCase())
+      });   
     if (error) {
         console.error('Error fetching organizations:', error);
         throw error;
     }
+    console.log(locations)
     return data;
 };
 

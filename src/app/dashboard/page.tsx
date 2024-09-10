@@ -47,7 +47,7 @@ const Dashboard = () => {
         return <p>Loading...</p>;
     }
     if (userError || orgError) {
-        return <p>Error: {userError.message || orgError.message}</p>;
+        return <p>Error: </p>;
     }
     if (!user) {
         return router.push('/');

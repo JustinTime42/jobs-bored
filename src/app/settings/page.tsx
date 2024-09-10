@@ -31,7 +31,7 @@ const UserAccount = () => {
             alert('Please select a valid location');
             return;
         }
-        const strippedLocation = newLocation.replace(/,/g, '');
+        const strippedLocation = newLocation.replace(/,/g, '').toLowerCase();
         try {
             await addLocation(strippedLocation);
             const updatedDetails = await updateUserDetails({
