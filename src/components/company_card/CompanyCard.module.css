@@ -1,0 +1,14 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  background-color: hsl(var(--card-background));
+  box-shadow: 0 0.5rem 1rem hsl(var(--shadow));
+  transition: background-color 0.3s;
+}
+
+.card:hover {
+  background-color: hsl(var(--btn-background-hover));
+}

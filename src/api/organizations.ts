@@ -21,7 +21,6 @@ export const saveOrganizations = async (organizations: any[]) => {
 };
 
 export const getLocalOrganizations = async (locations: string[]) => {
-    console.log(locations)
     const localities = locations.map(location => location.toLowerCase());
     const { data, error } = await supabaseAdmin
     .rpc('get_organizations_with_scores', {
@@ -31,7 +30,6 @@ export const getLocalOrganizations = async (locations: string[]) => {
         console.error('Error fetching organizations:', error);
         throw error;
     }
-    console.log(locations)
     return data;
 };
 

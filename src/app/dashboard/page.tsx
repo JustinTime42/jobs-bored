@@ -12,6 +12,7 @@ import styles from './page.module.css';
 import useLocalOrganizations from '../hooks/useLocalOrgs';
 import ExternalLink from '@/src/components/Link/ExternalLink';
 import { Organization } from '@/src/definitions';
+import CompanyCard from '@/src/components/company_card/CompanyCard';
 
 export type orgType = {
     details: Organization;
@@ -33,15 +34,11 @@ const Dashboard = () => {
                 setUserDetails(data);
             });
             getFavoriteCompanies(user.id).then((data) => {
-                console.log(data)
                 setFavoriteCompanies(data);
             })
 
         }
     },[JSON.stringify(user)]);
-    useEffect(() => {
-        console.log(userDetails);
-    }, [userDetails]);
 
     if (userLoading || orgLoading) {
         return <p>Loading...</p>;
@@ -61,28 +58,23 @@ const Dashboard = () => {
         );
     }
     return (
-        <div className={styles.container}>
-            <div>                
-                <div className={styles.favorites}>
-                    <h2>Favorites</h2>
-                    {favoriteCompanies.length > 0 ? (
-                    favoriteCompanies.map((company) => (
-                        <div key={company.details.id} className={styles.org}>
-                            <Link href={`/dashboard/${company.details.id}`}>{company.details.name}</Link>
-                        </div>
-                    ))
-                    ) :
-                    <p>Add companies to your favorites to track them here.</p>
-                }
-                </div>
-        
+        <div className={styles.container}>           
+            <div className={styles.favorites}>
+                <h2>Favorites</h2>
+                {favoriteCompanies.length > 0 ? (
+                favoriteCompanies.map((company) => (
+                    <div key={company.details.id} className={styles.org}>
+                        <Link href={`/dashboard/${company.details.id}`}>{company.details.name} {company.details.company_size?.toString()}</Link>
+                    </div>
+                ))
+                ) :
+                <p>Add companies to your favorites to track them here.</p>
+            }
             </div>
 
-            <div>
+            <div className={styles.feed}>
                 {organizations.map((organization) => (
-                    <div className={styles.org} key={organization.id}>
-                        <Link href={`/dashboard/${organization.id}`}>{organization.name}</Link>
-                    </div>
+                    <CompanyCard company={organization} key={organization.id}/>
                 ))}
             </div>
         </div>

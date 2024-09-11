@@ -22,8 +22,8 @@ let companies = [];
 const createAdminClient = () => {
     console.log("Creating admin client")
     return createClient(
-        "https://hrenjtquhpvpwjjadewv.supabase.co", 
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhyZW5qdHF1aHB2cHdqamFkZXd2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyMjI4MzY0MCwiZXhwIjoyMDM3ODU5NjQwfQ._9EYSjv5021SI5exO5kzpFnIZRp5hGiX7hP_I6qxncE",
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_KEY, 
         {auth: {
             persistSession: false,
             autoRefreshToken: false,
