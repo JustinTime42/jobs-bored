@@ -63,7 +63,7 @@ const Dashboard = () => {
                 <h2>Favorites</h2>
                 {favoriteCompanies.length > 0 ? (
                 favoriteCompanies.map((company) => (
-                    <div key={company.details.id} className={styles.org}>
+                    <div key={company.details.id} className={styles.favoriteItem}>
                         <Link href={`/dashboard/${company.details.id}`}>{company.details.name} {company.details.company_size?.toString()}</Link>
                     </div>
                 ))
@@ -73,6 +73,7 @@ const Dashboard = () => {
             </div>
 
             <div className={styles.feed}>
+                <h2>Companies Feed</h2>
                 {organizations.map((organization) => (
                     <CompanyCard company={organization} key={organization.id}/>
                 ))}

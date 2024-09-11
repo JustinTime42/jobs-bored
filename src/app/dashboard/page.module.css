@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: center;
   width: 100%;
   height: 100vh;
 }
@@ -10,9 +10,16 @@
   border-right: 1px solid #e0e0e0;
   height: 100%;
   flex: 1;
+  max-width: 400px;
+}
+
+.favoriteItem {
+  padding: 8px;
 }
 
 .feed {
+  margin-left: 1rem;
   flex: 1;
   height: 100%;
+  max-width: 400px;
 }
