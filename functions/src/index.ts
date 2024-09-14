@@ -133,7 +133,7 @@ export const addLocation = onCall(async (request: any) => {
                         "software engineer",
                     ],
                     organization_num_employees_ranges: ["5,5000"],
-                    person_locations: [location],
+                    person_locations: [location.formatted_address],
                 }),
             });
 

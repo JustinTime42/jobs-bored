@@ -73,7 +73,7 @@ importers:
         version: 4.0.1(react@18.2.0)
     devDependencies:
       '@types/google.maps':
-        specifier: ^3.55.12
+        specifier: ^3.57.0
         version: 3.57.0
       '@types/node':
         specifier: 20.11.5

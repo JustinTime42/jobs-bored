@@ -7,11 +7,13 @@ import LocationAutoComplete from './LocationAutoComplete';
 import AsyncButton from '@/src/components/async_button/AsyncButton';
 import { addLocation } from '@/src/api/locations';
 import Location from '@/src/components/location/Location';
+import { DetailsResult, Suggestion } from 'use-places-autocomplete';
+import { saveLocation } from '@/src/api/locations';
 
 const UserAccount = () => {
     const { user, loading, error, fetchUser } = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
-    const [newLocation, setNewLocation] = useState('');
+    const [newLocation, setNewLocation] = useState({});
     const router = useRouter();
 
     useEffect(() => {
@@ -27,19 +29,19 @@ const UserAccount = () => {
     }, [JSON.stringify(user)]);
 
     const handleAddLocation = async () => {
+        const locationId = await saveLocation(newLocation);
         if (!newLocation) {
             alert('Please select a valid location');
             return;
         }
-        const strippedLocation = newLocation.replace(/,/g, '').toLowerCase();
         try {
-            await addLocation(strippedLocation);
+            await addLocation(newLocation, locationId);
             const updatedDetails = await updateUserDetails({
                 ...userDetails,
-                locations: [...userDetails.locations, strippedLocation],
+                locations: [...userDetails.locations, locationId],
             });
             setUserDetails(updatedDetails);
-            setNewLocation('');
+            setNewLocation({} as Suggestion);
         } catch (error) {
             throw error
         }
