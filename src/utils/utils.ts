@@ -1,4 +1,7 @@
 export const capitolizeLocation = (str: string) => {
+    // console.log("Capitolize Location", str);
+    return
+    if (!str) return '';
     const locationArray = str.split(' ');
     const locality = locationArray[0] && (locationArray[0].charAt(0).toUpperCase() + locationArray[0].slice(1));
     const region = locationArray[1] && ((locationArray[1].length < 4) ?

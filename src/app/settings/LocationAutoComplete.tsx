@@ -1,27 +1,35 @@
-// LocationAutoComplete.tsx
 import Input from '@/src/components/input/Input';
 import React from 'react';
-import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
+import usePlacesAutocomplete, { getGeocode, getLatLng, Suggestion, getDetails, DetailsResult } from 'use-places-autocomplete';
 import styles from './LocationAutoComplete.module.css';
-
-interface LocationAutoCompleteProps {
-    onSelectLocation: (location: string) => void;
-}
+import { LocationAutoCompleteProps } from '@/src/definitions';
 
 const LocationAutoComplete: React.FC<LocationAutoCompleteProps> = ({ onSelectLocation }) => {
     const { ready, value, suggestions: { status, data }, setValue, clearSuggestions } = usePlacesAutocomplete({
         requestOptions: {
-            types: ['(cities)'], // Restrict to cities
+            types: ['(cities)'],
         },
     });
 
-    const handleSelect = async (address: string) => {
-        console.log(address)
-        setValue(address, false);
-        clearSuggestions();
+    const handleSelect = async (suggestion: Suggestion) => {
+        const details: google.maps.places.PlaceResult | string = await getDetails({
+            placeId: suggestion.place_id,
+            fields: ['address_components', 'formatted_address', 'name','adr_address', 'place_id']
+          });
 
+        clearSuggestions();
+        
+          console.log("Details", details);
         try {
-            onSelectLocation(address);
+            if (typeof details === 'string') {
+                console.error('Error fetching place details:', details);
+              } else {
+                onSelectLocation({
+                    address_components: details.address_components,
+                    formatted_address: details.formatted_address,
+                });
+                setValue(details.formatted_address || '', false);
+            }
         } catch (error) {
             console.error('Error:', error);
         }
@@ -42,7 +50,7 @@ const LocationAutoComplete: React.FC<LocationAutoCompleteProps> = ({ onSelectLoc
                     <div
                         className={styles.suggestion}
                         key={suggestion.place_id}
-                        onClick={() => handleSelect(suggestion.description)}
+                        onClick={() => handleSelect(suggestion)}
                     >
                         {suggestion.description}
                     </div>

@@ -3,10 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { useUserContext } from '../context/UserContext';
 import Input from '@/src/components/input/Input';
 import { useRouter } from 'next/navigation';
-import { getUserDetails } from '@/src/api/user';
+import { getUserDetails } from '@/src/actions/user';
 import Button from '@/src/components/button/Button';
-import { addLocation } from '@/src/api/locations';
-import { getFavoriteCompanies, getLocalOrganizations } from '@/src/api/organizations';
+import { addLocation } from '@/src/actions/locations';
+import { getFavoriteCompanies, getLocalOrganizations } from '@/src/actions/organizations';
 import Link from 'next/link';
 import styles from './page.module.css';
 import useLocalOrganizations from '../hooks/useLocalOrgs';
@@ -31,6 +31,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (user) {
             getUserDetails(user.id).then((data) => {
+                console.log(data)
                 setUserDetails(data);
             });
             getFavoriteCompanies(user.id).then((data) => {

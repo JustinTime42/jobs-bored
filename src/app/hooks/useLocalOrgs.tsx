@@ -1,7 +1,7 @@
-import { getLocalOrganizations } from '@/src/api/organizations';
+import { getLocalOrganizations } from '@/src/actions/organizations';
 import { useState, useEffect } from 'react';
 
-const useLocalOrganizations = (locations?: string[]) => {
+const useLocalOrganizations = (locations?: any[]) => {
     const [organizations, setOrganizations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<any>(null);
@@ -11,7 +11,9 @@ const useLocalOrganizations = (locations?: string[]) => {
         if (!locations) return 
         setLoading(true);
         try {
-            const data = await getLocalOrganizations(locations);
+            const locationIds = locations.map(l => l.location.id);
+            console.log(locationIds)
+            const data = await getLocalOrganizations(locationIds);
             setOrganizations(data);
         } catch (error) {
             setError(error);

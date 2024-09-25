@@ -134,7 +134,7 @@ export interface Organization {
     linkedin_url: string;
     twitter_url: string | null;
     facebook_url: string | null;
-    primary_phone: string;
+    sanitized_phone: string;
     hires_in?: string[];
     logo_url: string;
     emails: string[];
