@@ -56,6 +56,13 @@ const Dashboard = () => {
                 <p>No organizations found. Add a location in your<ExternalLink href='/settings'>account settings</ExternalLink>.</p>
             </div>
         );
+    } else if (organizations.length === 0) {
+        return (
+            <div>
+                <h1>Dashboard</h1>
+                <p>No organizations found in your locations. Note: If you just added a new location, wait a few minutes and then refresh the page. It can take up to 2 minutes for us to gather information on relevant companies and add them to your feed for the first time.</p>
+            </div>
+        );
     }
     return (
         <div className={styles.container}>           
