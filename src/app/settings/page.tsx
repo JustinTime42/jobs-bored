@@ -2,13 +2,15 @@
 import React, { useEffect, useState } from 'react';
 import { useUserContext } from '../context/UserContext';
 import { useRouter } from 'next/navigation';
-import { getUserDetails, updateUserDetails } from '@/src/api/user';
+import { getUserDetails, updateUserDetails } from '@/src/actions/user';
 import LocationAutoComplete from './LocationAutoComplete';
 import AsyncButton from '@/src/components/async_button/AsyncButton';
-import { addLocation } from '@/src/api/locations';
+import { addLocation } from '@/src/actions/locations';
 import Location from '@/src/components/location/Location';
 import { DetailsResult, Suggestion } from 'use-places-autocomplete';
-import { saveLocation } from '@/src/api/locations';
+import { saveLocation } from '@/src/actions/locations';
+import { supabase } from '@/src/utils/supabase/client';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 const UserAccount = () => {
     const { user, loading, error, fetchUser } = useUserContext();
@@ -25,34 +27,58 @@ const UserAccount = () => {
             getUserDetails(user.id).then((data) => {
                 setUserDetails(data);
             });
+
+            const channel = supabase
+            .channel('public:users_locations')
+            .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'users_locations' },
+            (payload) => {
+                console.log('Change received!', payload);
+                getUserDetails(user.id).then((data) => {
+                    setUserDetails(data);
+                });
+            }
+            )
+            .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+                console.log('Subscribed to realtime updates on users_locations');
+            }
+            });
+
+            // Cleanup subscription on unmount
+            return () => {
+                supabase.removeChannel(channel);
+            };
         }
     }, [JSON.stringify(user)]);
 
     const handleAddLocation = async () => {
-        const locationId = await saveLocation(newLocation);
         if (!newLocation) {
             alert('Please select a valid location');
             return;
         }
         try {
-            await addLocation(newLocation, locationId);
-            const updatedDetails = await updateUserDetails({
-                ...userDetails,
-                locations: [...userDetails.locations, locationId],
-            });
-            setUserDetails(updatedDetails);
-            setNewLocation({} as Suggestion);
+            await addLocation(newLocation, user.id);
+            // const updatedDetails = await updateUserDetails({
+            //     ...userDetails,
+            //     locations: [...userDetails.locations, locationId],
+            // });
+            // setUserDetails(updatedDetails);
+            // setNewLocation({} as Suggestion);
         } catch (error) {
             throw error
         }
     };
 
-    const handleRemovelocation = async (location: string) => {
-        const updatedDetails = await updateUserDetails({
-            ...userDetails,
-            locations: userDetails.locations.filter((loc: string) => loc !== location),
-        });
-        setUserDetails(updatedDetails);
+    const handleRemovelocation = async (location: any) => {
+        console.log('Remove location:', location);
+        await supabase.from('users_locations').delete().eq('user_id', user.id).eq('location_id', location.location.id);
+        // const updatedDetails = await updateUserDetails({
+        //     ...userDetails,
+        //     locations: userDetails.locations.filter((loc: string) => loc !== location),
+        // });
+        // setUserDetails(updatedDetails);
     };
 
     if (loading) {

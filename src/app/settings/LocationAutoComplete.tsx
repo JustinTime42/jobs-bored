@@ -1,4 +1,3 @@
-// LocationAutoComplete.tsx
 import Input from '@/src/components/input/Input';
 import React from 'react';
 import usePlacesAutocomplete, { getGeocode, getLatLng, Suggestion, getDetails, DetailsResult } from 'use-places-autocomplete';
@@ -15,10 +14,11 @@ const LocationAutoComplete: React.FC<LocationAutoCompleteProps> = ({ onSelectLoc
     const handleSelect = async (suggestion: Suggestion) => {
         const details: google.maps.places.PlaceResult | string = await getDetails({
             placeId: suggestion.place_id,
-            fields: ['address_components', 'formatted_address', 'name','adr_address']
+            fields: ['address_components', 'formatted_address', 'name','adr_address', 'place_id']
           });
 
         clearSuggestions();
+        
           console.log("Details", details);
         try {
             if (typeof details === 'string') {
@@ -28,6 +28,7 @@ const LocationAutoComplete: React.FC<LocationAutoCompleteProps> = ({ onSelectLoc
                     address_components: details.address_components,
                     formatted_address: details.formatted_address,
                 });
+                setValue(details.formatted_address || '', false);
             }
         } catch (error) {
             console.error('Error:', error);

@@ -1,12 +1,12 @@
 'use client'
-import { addCompanyToFavorites, getCompanyDetails, removeCompanyFromFavorites } from "@/src/api/organizations";
+import { addCompanyToFavorites, getCompanyDetails, removeCompanyFromFavorites } from "@/src/actions/organizations";
 import { useEffect, useState } from "react";
 import ExternalLink from "@/src/components/Link/ExternalLink";
 import { Organization, Person } from "@/src/definitions";
 import styles from './CompanyPage.module.css';
-import { getPeopleInOrganization } from "@/src/api/people";
+import { getPeopleInOrganization } from "@/src/actions/people";
 import AsyncButton from "@/src/components/async_button/AsyncButton";
-import { getPersonEmails } from "@/src/api/apolloPeople";
+import { getPersonEmails } from "@/src/actions/apolloPeople";
 import { useUserContext } from "../../context/UserContext";
 
 const CompanyPage = ({ params }: { params: {company: string}}) => {

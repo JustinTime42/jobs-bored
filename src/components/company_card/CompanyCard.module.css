@@ -12,3 +12,9 @@
 .card:hover {
   background-color: hsl(var(--btn-background-hover));
 }
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
