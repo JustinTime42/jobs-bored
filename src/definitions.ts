@@ -132,3 +132,9 @@ export interface ApolloResponse {
     people: Person[];
   }
   
+  export interface LocationAutoCompleteProps {
+    onSelectLocation: (location: {
+        address_components: google.maps.GeocoderAddressComponent[] | undefined;
+        formatted_address: string | undefined;
+    }) => void;
+}

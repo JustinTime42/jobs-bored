@@ -1,6 +1,7 @@
 {
-  "compilerOptions": {
+  "compilerOptions": {    
     "target": "es5",
+    "types": ["google.maps"],
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,

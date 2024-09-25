@@ -11,7 +11,7 @@ const validOrganizationKeys = [
 	"linkedin_url",
 	"twitter_url",
 	"facebook_url",
-	"primary_phone",
+	"sanitized_phone",
 	"hires_in",
 	"logo_url",
 ];

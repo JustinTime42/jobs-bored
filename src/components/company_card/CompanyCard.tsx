@@ -3,10 +3,11 @@ import { capitolizeLocation } from "@/src/utils/utils";
 import Link from "next/link";
 import styles from "./CompanyCard.module.css";
 import WhatshotIcon from '@mui/icons-material/Whatshot';  
+import ExternalLink from "../Link/ExternalLink";
 
 type CompanyCardProps = {
     company: {
-        company_size: number;
+        size: number;
         country: string;
         id: string;
         locality: string;
@@ -14,14 +15,12 @@ type CompanyCardProps = {
         region: string;
         score: number;
         website_url: string;
+        linkedin_url: string;
     }
 };
 
 const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => {
-    const { company_size, locality, name, region, score, id } = company;
-
-    const capitalizedLocality = locality ? capitolizeLocation(locality): "";
-    const capitalizedRegion = region ? capitolizeLocation(region): "";
+    const { size, locality, name, region, score, id, linkedin_url } = company;
     
     const sizeMap: { [key: number]: string } = {
         0: '1-10',
@@ -49,11 +48,23 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => {
     return (
         <div className={styles.card}>
             <Link href={`/dashboard/${id}`}>
-                <h4>{name}</h4>                
-                <p>{capitalizedLocality && `${capitalizedLocality},`} {capitalizedRegion}</p>
-                <p>Size: {sizeMap[company_size]}</p>
-                <Score />
-            </Link>
+                <h4>{name}</h4>  
+            </Link>        
+            <div className={styles.container}>
+                <div>
+                    <p>{locality && `${locality},`} {region}</p>
+                    <p>Size: {sizeMap[size]}</p>
+                    <Score />
+                </div>
+                <div>
+                    <ExternalLink href={linkedin_url}>LinkedIn</ExternalLink>
+                    <ExternalLink href={company.website_url}>Website</ExternalLink>
+                </div>
+            </div>      
+
+                
+                
+            
         </div>
     );
 };
