@@ -6,7 +6,7 @@ import { Organization, Person } from "@/src/definitions";
 import styles from './CompanyPage.module.css';
 import { getPeopleInOrganization } from "@/src/actions/people";
 import AsyncButton from "@/src/components/async_button/AsyncButton";
-import { getPersonEmails } from "@/src/actions/apolloPeople";
+import { getCompanyPeople, getPersonEmails } from "@/src/actions/apolloPeople";
 import { useUserContext } from "../../context/UserContext";
 
 const CompanyPage = ({ params }: { params: {company: string}}) => {
@@ -48,6 +48,13 @@ const CompanyPage = ({ params }: { params: {company: string}}) => {
         return setIsFavorite(false);
     }
 
+    const handleGetCompanyPeople = async () => {
+        const people = await getCompanyPeople(params.company);
+
+        return setPeople(people);
+
+    }
+
     if (!companyDetails) {
         return <p>Loading...</p>;
     }
@@ -74,6 +81,7 @@ const CompanyPage = ({ params }: { params: {company: string}}) => {
 
         </div>
         <div>
+            <AsyncButton label="Find More People" asyncAction={handleGetCompanyPeople} />
             {people.map((person,i) => (
                 <div key={i} className={styles.person}>
                     <img className={styles.person_photo} src={person.photo_url} alt={person.name} />

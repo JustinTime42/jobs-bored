@@ -131,3 +131,58 @@ export const getPersonEmails = async (id: string) => {
 		return [];
 	}
 }
+
+export const getCompanyPeople = async (company_id: string) => {
+	try {
+		const requestHeaders = {
+			"Content-Type": "application/json",
+			"Cache-Control": "no-cache",
+			"X-Api-Key": process.env.APOLLO_API_KEY!
+		};
+		const response = await fetch("https://api.apollo.io/v1/mixed_people/search", {
+			method: 'POST',
+			headers: requestHeaders,
+			body: JSON.stringify({
+				organization_ids: [company_id],
+				per_page: 100,
+				page: 1,
+				person_titles: [
+					"Web Developer",
+					"programmer",
+					"software developer",
+					"software engineer",
+					"CEO",
+					"CTO",
+					"Technical Recruiter",
+					"Human Resources"
+				]
+
+			})
+		});
+		const data = await response.json();
+		const cleanPeople = data.people.map((person: any) => {
+			person = Object.keys(person).reduce((acc:any, key) => {
+				if (validPersonKeys.includes(key)) {
+					acc[key] = person[key];
+				}
+				delete acc['organization']
+				return acc;
+			}, {} as Person)
+			return person
+		})		
+		const dbResponse = await supabaseAdmin
+			.from('people')
+			.upsert(cleanPeople, {onConflict: 'id'})
+			.select('*');
+		if (dbResponse.error) {
+			throw dbResponse.error;
+		}
+		const people = dbResponse.data;
+		return people
+
+	}
+	catch (e) {
+		console.error('Failed to get company people:', e);
+		return [];
+	}
+}
