@@ -4,6 +4,7 @@ import Link from "next/link";
 import styles from "./CompanyCard.module.css";
 import WhatshotIcon from '@mui/icons-material/Whatshot';  
 import ExternalLink from "../Link/ExternalLink";
+import { supabase } from "@/src/utils/supabase/client";
 
 type CompanyCardProps = {
     company: {
@@ -45,9 +46,16 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => {
         )
     }
 
+    const handleOpenCompany = async () => {
+        await supabase.from('activity_log').insert([
+            { type: 'viewCompanyDetails', contact: company.id, body: company.name }
+        ]);
+        return
+    }
+
     return (
         <div className={styles.card}>
-            <Link href={`/dashboard/${id}`}>
+            <Link onClick={handleOpenCompany}  href={`/dashboard/${id}`}>
                 <h4>{name}</h4>  
             </Link>        
             <div className={styles.container}>

@@ -1,5 +1,6 @@
 'use server'
 import { supabaseAdmin } from "../utils/supabase/admin";
+import { supabase } from "../utils/supabase/client";
 
 export const getUserDetails = async (uid: string) => {
     const { data, error } = await supabaseAdmin
@@ -36,5 +37,4 @@ export const updateUserDetails = async (user: any) => {
     if (error) throw error;
     return user;
 }
-
 
