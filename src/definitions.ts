@@ -99,6 +99,7 @@ export type Person = {
     last_name: string;
     name: string;
     linkedin_url: string;
+    headline: string;
     title: string;
     photo_url: string;
     twitter_url: string | null;

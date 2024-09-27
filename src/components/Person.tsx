@@ -10,6 +10,7 @@ const Person = ({ person }: { person: PersonType }) => {
             </div>
             <p>{person.name}</p>
             <p>{person.title}</p>
+            <p>{person.headline}hi</p>
             {person.linkedin_url && <ExternalLink href={person.linkedin_url }>LinkedIn</ExternalLink>}
             {person.facebook_url && <ExternalLink href={person.facebook_url}>Facebook</ExternalLink>}
             {person.twitter_url && <ExternalLink href={person.twitter_url}>Twitter</ExternalLink>}

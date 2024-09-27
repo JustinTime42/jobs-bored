@@ -79,8 +79,10 @@ const CompanyPage = ({ params }: { params: {company: string}}) => {
                     <img className={styles.person_photo} src={person.photo_url} alt={person.name} />
                     <div>
                         <p>{person.name}</p>
-                        <p>{person.title}</p>
+                        <p>{person.title && `Title: ${person.title}`}</p>
+                        <p>{person.headline && `Headline: ${person.headline}`}</p>
                         <p>{person.city && person.city}{person.state && `, ${person.state}`} </p>
+                        
                     </div>
                     <div>
                         {person.linkedin_url && <ExternalLink href={person.linkedin_url }>LinkedIn</ExternalLink>}
