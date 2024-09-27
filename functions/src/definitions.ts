@@ -138,6 +138,7 @@ export interface Organization {
     hires_in?: string[];
     logo_url: string;
     emails: string[];
+    fetched_people?: boolean;
     phone: string;
     people?: Person[];
     user_organizations?: any[];
@@ -146,7 +147,6 @@ export interface Organization {
     state: string;
     country: string;
     postal_code: string;
-    fetched_people?: boolean;
   }
 export type {
     ApolloResponse,

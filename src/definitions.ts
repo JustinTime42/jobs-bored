@@ -44,6 +44,7 @@ export interface EmploymentHistory {
     state: string;
     country: string;
     postal_code: string;
+    fetched_people?: boolean;
   }
   
   export interface Account {
