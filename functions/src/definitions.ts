@@ -146,6 +146,7 @@ export interface Organization {
     state: string;
     country: string;
     postal_code: string;
+    fetched_people?: boolean;
   }
 export type {
     ApolloResponse,

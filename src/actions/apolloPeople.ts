@@ -174,6 +174,10 @@ export const getCompanyPeople = async (company_id: string) => {
 			.from('people')
 			.upsert(cleanPeople, {onConflict: 'id'})
 			.select('*');
+		await supabaseAdmin
+			.from('organizations')
+			.update({fetched_people: true})
+			.eq('id', company_id);
 		if (dbResponse.error) {
 			throw dbResponse.error;
 		}

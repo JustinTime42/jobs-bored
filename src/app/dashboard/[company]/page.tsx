@@ -50,6 +50,9 @@ const CompanyPage = ({ params }: { params: {company: string}}) => {
 
     const handleGetCompanyPeople = async () => {
         const people = await getCompanyPeople(params.company);
+        getCompanyDetails(params.company, user.id).then((data) => {
+            setCompanyDetails(data);
+        });
 
         return setPeople(people);
 
@@ -81,7 +84,9 @@ const CompanyPage = ({ params }: { params: {company: string}}) => {
 
         </div>
         <div>
-            <AsyncButton label="Find More People" asyncAction={handleGetCompanyPeople} />
+            {
+                !companyDetails.fetched_people && <AsyncButton label="Find More People" asyncAction={handleGetCompanyPeople} />
+            }            
             {people.map((person,i) => (
                 <div key={i} className={styles.person}>
                     <img className={styles.person_photo} src={person.photo_url} alt={person.name} />
