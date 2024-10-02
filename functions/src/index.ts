@@ -2,6 +2,8 @@
 import {onCall} from "firebase-functions/v2/https";
 import {Organization, Person} from "./definitions";
 import {createClient} from "@supabase/supabase-js";
+import axios from "axios";
+import * as cheerio from "cheerio";
 
 const validOrganizationKeys = [
     "id",
@@ -34,6 +36,13 @@ const validPersonKeys = [
     "primary_phone",
     "organization_id",
     "locationId",
+];
+
+
+const userAgentList = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/602.3.12 (KHTML, like Gecko)",
 ];
 
 export const createAdminClient = () => {
@@ -267,3 +276,194 @@ export const saveLocation = async (location: any) => {
         return [];
     }
 };
+
+export const emailScraper = onCall({timeoutSeconds: 300, memory: "4GiB"}, async (req: any) => {
+    const supabaseAdmin = createAdminClient();
+    const {startUrl} = req.data;
+    console.log("Starting URL:", startUrl);
+
+    if (!startUrl) {
+        console.log("No start URL provided.");
+        return;
+    }
+
+    const maxDepth = 3;
+    const startTime = Date.now();
+    const maxDuration = 60 * 1000; // 1 minute in milliseconds
+
+    const visitedUrls = new Set<string>();
+    const emails = new Set<string>();
+
+    const commonTlds = [".com", ".net", ".gov", ".org", ".biz", ".edu", ".io", ".co", ".us", ".uk", ".ca", ".au"];
+    let domain: string;
+
+    try {
+        const urlObj = new URL(startUrl);
+        domain = urlObj.hostname;
+    } catch (error) {
+        console.log("Invalid start URL.");
+        await supabaseAdmin
+            .from("organizations")
+            .update({unreachable_url: true})
+            .eq("website_url", startUrl);
+        return;
+    }
+
+    let userAgentIndex = 0;
+
+    // Initialize the queue with the start URL at depth 0
+    const queue: { url: string; depth: number }[] = [];
+    queue.push({url: startUrl, depth: 0});
+
+    while (queue.length > 0) {
+        if (Date.now() - startTime > maxDuration) {
+            console.log("Max duration reached.");
+            break;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const {url, depth} = queue.shift()!;
+
+        if (depth > maxDepth) {
+            continue;
+        }
+
+        if (visitedUrls.has(url)) {
+            continue;
+        }
+        console.log(`Processing (Depth ${depth}): ${url}`);
+        visitedUrls.add(url);
+
+        // Rotate User-Agent
+        const userAgent = userAgentList[userAgentIndex % userAgentList.length];
+        userAgentIndex++;
+
+        // Politeness delay
+        await delay(2000); // 2-second delay between requests
+
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    "User-Agent": userAgent,
+                },
+            });
+
+            if (response.status !== 200 && url === startUrl) {
+                console.log("Unreachable website:", url);
+                await supabaseAdmin
+                    .from("organizations")
+                    .update({unreachable_url: true})
+                    .eq("website_url", startUrl);
+                continue;
+            }
+
+            const $ = cheerio.load(response.data);
+
+            // Extract emails from mailto links
+            $("a[href^='mailto:']").each((i, elem) => {
+                const href = $(elem).attr("href");
+                if (href) {
+                    const email = href.split(":")[1];
+                    const cleanedEmail = cleanEmail(email, domain, commonTlds);
+                    if (cleanedEmail) {
+                        console.log("Found email (mailto):", cleanedEmail);
+                        emails.add(cleanedEmail);
+                    }
+                }
+            });
+
+            // Extract emails from text within <p> and heading tags
+            let textContent = "";
+            $("p, h1, h2, h3, h4, h5, h6").each((i, elem) => {
+                textContent += $(elem).text() + " ";
+            });
+
+            const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+            const foundEmails = textContent.match(emailRegex);
+            if (foundEmails) {
+                for (const email of foundEmails) {
+                    const cleanedEmail = cleanEmail(email, domain, commonTlds);
+                    if (cleanedEmail) {
+                        console.log("Found email (text):", cleanedEmail);
+                        emails.add(cleanedEmail);
+                    }
+                }
+            }
+
+            // Collect links to follow
+            const linksToFollow: string[] = [];
+
+            $("a").each((i, elem) => {
+                const href = $(elem).attr("href");
+                if (href) {
+                    let newUrl: string;
+                    try {
+                        newUrl = new URL(href, url).href;
+                    } catch (error) {
+                        return;
+                    }
+                    const newUrlObj = new URL(newUrl);
+                    if (newUrlObj.hostname === domain && !visitedUrls.has(newUrl)) {
+                        linksToFollow.push(newUrl);
+                    }
+                }
+            });
+
+            // Add new URLs to the queue with incremented depth
+            for (const link of linksToFollow) {
+                queue.push({url: link, depth: depth + 1});
+            }
+        } catch (error) {
+            console.log(`Error fetching ${url}:`, (error as Error).message);
+            // Handle errors silently or log them as needed
+        }
+    }
+
+    console.log("Emails found:", Array.from(emails));
+
+    const {data, error} = await supabaseAdmin
+        .from("organizations")
+        .update({emails: Array.from(emails)})
+        .eq("website_url", startUrl);
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+});
+
+function cleanEmail(email: string, domain: string, commonTlds: string[]): string | null {
+    console.log("Checking email:", email);
+    // Trim query strings and whitespace
+    const emailWithoutQuery = email.split("?")[0].trim();
+
+    // Remove trailing characters that are not part of the email
+    const emailTrimmed = emailWithoutQuery.replace(/[^\w@.+-]/g, "");
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailTrimmed)) {
+        return null;
+    }
+
+    // Exclude emails with invalid extensions
+    const invalidExtensions = [".png", ".jpg", ".jpeg", ".gif", ".svg", ".css", ".js", ".json", ".xml"];
+    for (const ext of invalidExtensions) {
+        if (emailTrimmed.endsWith(ext)) {
+            return null;
+        }
+    }
+
+    // Check if email domain matches common TLDs or current domain
+    const emailDomain = emailTrimmed.split("@")[1];
+    if (emailDomain === domain.replace(/^www\./, "") || commonTlds.some((tld) => emailDomain.endsWith(tld))) {
+        return emailTrimmed.toLowerCase();
+    }
+
+    return null;
+}
+
+function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}

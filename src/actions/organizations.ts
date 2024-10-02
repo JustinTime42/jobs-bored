@@ -1,8 +1,9 @@
 'use server'
-import { orgType } from '../app/dashboard/page';
+import { httpsCallable } from 'firebase/functions';
 import { Organization } from '../definitions';
 import { supabaseAdmin } from '../utils/supabase/admin';
 import { supabase } from '../utils/supabase/client';
+import { functions } from '../utils/firebase/firebase';
 
 export const saveOrganizations = async (organizations: any[]) => {
     console.log("Saving organizations")
@@ -77,4 +78,57 @@ export const getFavoriteCompanies = async (userId: string) => {
         throw new Error(`Failed to get favorite companies: ${error}`);
     }
     return data;
+}
+
+export const scrapeEmails = async (startUrl: string) => {
+    try {
+        const emailScraper = httpsCallable(functions, 'emailScraper');
+        const { data } = await emailScraper({startUrl});
+        return data;
+    }
+    catch (e) {
+        throw new Error(`Failed to scrape emails: ${e}`);
+    }
+}
+
+export const scrapeEmailsALL = async () => {
+    try {
+        let from = 0;
+        const pageSize = 1000;
+        let allData:any = [];
+        let hasMoreData = true;
+
+        while (hasMoreData) {
+            const { data, error } = await supabaseAdmin
+                .from('organizations')
+                .select('website_url')
+                .not('website_url', 'is', null)
+                .range(from, from + pageSize - 1);
+
+            if (error) {
+                console.error('Error fetching data:', error);
+                break;
+            }
+
+            if (data.length > 0) {
+                allData = allData.concat(data);
+                from += pageSize;
+            } else {
+                hasMoreData = false;
+            }
+            console.log('Scraping emails for:', Object.keys(data));
+        }
+        console.log("Data length", allData.length)
+        console.log("First Element", allData[0])
+        await scrapeEmails(allData[5].website_url);
+        await scrapeEmails(allData[0].website_url);
+        allData.forEach(async (org: {website_url:string}, i: number) => {
+            setTimeout(async () => {
+                await scrapeEmails(org.website_url);
+            }, i * 100);
+        });
+    }
+    catch (e) {
+        throw new Error(`Failed to scrape emails: ${e}`);
+    }
 }

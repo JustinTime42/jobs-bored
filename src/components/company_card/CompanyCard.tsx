@@ -17,6 +17,7 @@ type CompanyCardProps = {
         score: number;
         website_url: string;
         linkedin_url: string;
+        emails: string[];
     }
 };
 
@@ -68,11 +69,10 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => {
                     <ExternalLink href={linkedin_url}>LinkedIn</ExternalLink>
                     <ExternalLink href={company.website_url}>Website</ExternalLink>
                 </div>
-            </div>      
-
-                
-                
-            
+                {/* <div className={styles.emails}>            
+                    {company.emails?.map(email => <a key={email} href={`mailto:${email}`}>{email}</a>)}
+                </div> */}
+            </div>
         </div>
     );
 };

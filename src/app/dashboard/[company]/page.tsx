@@ -1,5 +1,5 @@
 'use client'
-import { addCompanyToFavorites, getCompanyDetails, removeCompanyFromFavorites } from "@/src/actions/organizations";
+import { addCompanyToFavorites, getCompanyDetails, removeCompanyFromFavorites, scrapeEmails, scrapeEmailsALL } from "@/src/actions/organizations";
 import { useEffect, useState } from "react";
 import ExternalLink from "@/src/components/Link/ExternalLink";
 import { Organization, Person } from "@/src/definitions";
@@ -55,7 +55,10 @@ const CompanyPage = ({ params }: { params: {company: string}}) => {
         });
 
         return setPeople(people);
+    }
 
+    const handleScrapeEmails = async () => {
+        return await scrapeEmailsALL();
     }
 
     if (!companyDetails) {
@@ -63,7 +66,7 @@ const CompanyPage = ({ params }: { params: {company: string}}) => {
     }
     return (
         <>
-        <div className={styles.company}>            
+        <div className={styles.company}>          
             <div>
                 <div><h3>{companyDetails.name}</h3>
                     {
@@ -75,10 +78,12 @@ const CompanyPage = ({ params }: { params: {company: string}}) => {
                 {companyDetails.linkedin_url && <ExternalLink href={companyDetails.linkedin_url}>LinkedIn</ExternalLink>}
                 {companyDetails.twitter_url && <ExternalLink href={companyDetails.twitter_url}>Twitter</ExternalLink>}
                 {companyDetails.facebook_url && <ExternalLink href={companyDetails.facebook_url}>Facebook</ExternalLink>}
+                
             </div>
             <div>
                 {companyDetails.phone && <p>{companyDetails.phone}</p>}
-                {companyDetails.emails && <div>{companyDetails.emails.map(email => <a href={`mailto:${email}`}>{email}</a>)}</div>}
+                {companyDetails.emails && <div className={styles.emails}>{companyDetails.emails.map(email => <a key={email} href={`mailto:${email}`}>{email}</a>)}</div>}
+                {/* <AsyncButton label="scrape emails" asyncAction={handleScrapeEmails} /> */}
             </div>
             <img className={styles.company_logo} src={companyDetails.logo_url} alt={companyDetails.name} />
 
@@ -87,8 +92,8 @@ const CompanyPage = ({ params }: { params: {company: string}}) => {
             {
                 !companyDetails.fetched_people && <AsyncButton label="Find More People" asyncAction={handleGetCompanyPeople} />
             }            
-            {people.map((person,i) => (
-                <div key={i} className={styles.person}>
+            {people.map((person) => (
+                <div key={person.id} className={styles.person}>
                     <img className={styles.person_photo} src={person.photo_url} alt={person.name} />
                     <div>
                         <p>{person.name}</p>

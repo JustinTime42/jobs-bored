@@ -9,7 +9,7 @@ export default function Index() {
     <div>
         <section className={styles.hero}>
             <div className={styles.heroCard}>
-                <h1 className={styles.headline}>A better way to find your next tech job!</h1>
+                <h1 className={styles.headline}>1A better way to find your next tech job!</h1>
                 <p>Tired of hitting <b>easy-apply</b>? Let our platform help you find jobs where you are the <b>only</b> candidate. </p>
 
             </div>
