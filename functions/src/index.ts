@@ -58,12 +58,14 @@ export const createAdminClient = () => {
 };
 
 export const getPeopleLabsData = async (websiteUrls: string[]) => {
+    console.log("Getting PeopleLabs data for websites:", websiteUrls);
     const supabaseAdmin = createAdminClient();
     const {data, error} = await supabaseAdmin
         .from("people_labs")
         .select("*")
         .in("website", websiteUrls);
     if (error) {
+        console.error("Error fetching PeopleLabs data:", error);
         throw error;
     }
     return data;
@@ -168,7 +170,13 @@ export const addLocation = onCall(async (request: any) => {
             cleanedPerson.locationId = newLocation.id;
             return cleanedPerson;
         });
-        const peopleLabsData = await getPeopleLabsData(Object.keys(allOrgWebsites));
+        const allUrls = Object.keys(allOrgWebsites);
+        const peopleLabsData = [] as any;
+        for (let i = 0; i < allUrls.length; i += 100) {
+            const urls = allUrls.slice(i, i + 100);
+            const data = await getPeopleLabsData(urls);
+            peopleLabsData.push(...data);
+        }
         console.log("PeopleLabs data:", peopleLabsData);
         const allOrganizations = allOrgs.map((org: any) => {
             const cleanedOrg = {} as any;
