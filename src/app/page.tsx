@@ -3,18 +3,20 @@ import { useUserContext } from "./context/UserContext";
 import { useEffect } from "react";
 import styles from './Index.module.css';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import Header from "../components/Header";
 export default function Index() {
 
   return (
     <div>
+        <Header />
         <section className={styles.hero}>
             <div className={styles.heroCard}>
-                <h1 className={styles.headline}>1A better way to find your next tech job!</h1>
+                <h1 className={styles.headline}>A better way to find your next tech job!</h1>
                 <p>Tired of hitting <b>easy-apply</b>? Let our platform help you find jobs where you are the <b>only</b> candidate. </p>
 
             </div>
             <div className={styles.heroshotContainer}>
-                <img className={styles.heroImage} src="heroshot.png" alt="Snow Plow" />
+                <img className={styles.heroImage} src="heroshot.png" alt="Frustrated at computer" />
             </div>
         </section>
         <div className={styles.benefits}>

@@ -14,6 +14,7 @@ const useLocalOrganizations = (locations?: any[]) => {
             const locationIds = locations.map(l => l.location.id);
             console.log(locationIds)
             const data = await getLocalOrganizations(locationIds);
+            console.log(data)
             setOrganizations(data);
         } catch (error) {
             setError(error);

@@ -2,7 +2,6 @@
 import { httpsCallable } from 'firebase/functions';
 import { Organization } from '../definitions';
 import { supabaseAdmin } from '../utils/supabase/admin';
-import { supabase } from '../utils/supabase/client';
 import { functions } from '../utils/firebase/firebase';
 
 export const saveOrganizations = async (organizations: any[]) => {
@@ -22,10 +21,9 @@ export const saveOrganizations = async (organizations: any[]) => {
 };
 
 export const getLocalOrganizations = async (locations: string[]) => {
-    const localities = locations.map(location => location.toLowerCase());
     const { data, error } = await supabaseAdmin
     .rpc('get_organizations_with_scores', {
-        location_ids: locations.map(loc => loc.toLowerCase())
+        location_ids: locations
       });   
     if (error) {
         console.error('Error fetching organizations:', error);
@@ -35,7 +33,7 @@ export const getLocalOrganizations = async (locations: string[]) => {
 };
 
 export const getCompanyDetails = async (orgId: string, userId: string) => {
-    const { data , error } = await 
+    const { data , error } = await
         supabaseAdmin
         .from('organizations')
         .select('*, user_organizations(*)')
@@ -77,7 +75,8 @@ export const getFavoriteCompanies = async (userId: string) => {
     if (error) {
         throw new Error(`Failed to get favorite companies: ${error}`);
     }
-    return data;
+    console.log(data)
+    return data.map((d: any) => d.details) as Organization[];
 }
 
 export const scrapeEmails = async (startUrl: string) => {
@@ -103,6 +102,7 @@ export const scrapeEmailsALL = async () => {
                 .from('organizations')
                 .select('website_url')
                 .not('website_url', 'is', null)
+                .is('emails', null)
                 .range(from, from + pageSize - 1);
 
             if (error) {

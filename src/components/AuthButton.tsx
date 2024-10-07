@@ -35,7 +35,7 @@ export default function AuthButton() {
 
   return user ? (
     <div className="flex items-center gap-4">
-      <Link href={'/settings'}>Hey, {user.user_metadata.preferred_username}! {` `}<ManageAccountsIcon /></Link>
+      <Link href={'/dashboard/settings'}>Hey, {user.user_metadata.preferred_username}! {` `}<ManageAccountsIcon /></Link>
       <button onClick={handleLogout} className="py-2 px-4 rounded-md no-underline bg-btn-background hover:bg-btn-background-hover">
         Logout
       </button>
