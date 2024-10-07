@@ -1,3 +1,7 @@
+.container {
+  max-width: 1200px;
+  margin-left: 1em;
+}
 .company {
   display: flex;
   flex-direction: row;
@@ -5,8 +9,7 @@
   justify-content: space-around;
   width: 100%;
   padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  border-bottom: 1px solid #ccc;
   margin-bottom: 10px;
 }
 
@@ -20,7 +23,6 @@
 .person {
   display: flex;
   align-items: center;
-  justify-content: space-around;
   padding: 10px;
   border-bottom: 1px solid #ccc;
 }
@@ -30,6 +32,14 @@
   border-radius: 10%;
   margin-right: 20px;
 }
+
+.person_info {
+  flex: 4;
+}
+
+/* .person_links {
+  flex: 1;
+} */
 
 .emails {
   display: flex;

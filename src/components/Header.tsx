@@ -14,10 +14,10 @@ export default function Header() {
 
   return (
       <nav className="w-full flex justify-center border-b border-b-foreground/10">
-        <Link href='/'><Image src="/logo.png" alt="Logo" width={128} height={128} /></Link>
+        <Link href='/'><Image src="/logo2.png" alt="Logo" width={256} height={128} /></Link>
         <div className="w-full max-w-4xl flex justify-end gap-10 items-center p-3 text-sm">
           {user && (
-            <Link href="/dashboard">
+            <Link href="/dashboard/feed">
               Dashboard
             </Link>
           )}

@@ -40,9 +40,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${rubik.variable} ${raleway.variable}`}>
       <body className="bg-background text-foreground">
-        <main className="min-h-screen flex flex-col items-center">
-          <UserProvider>
-            <Header />
+        <main className="min-h-screen flex flex-col">
+          <UserProvider>            
             {children}
           </UserProvider>
         </main>

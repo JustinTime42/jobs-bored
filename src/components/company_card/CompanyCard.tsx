@@ -4,9 +4,9 @@ import Link from "next/link";
 import styles from "./CompanyCard.module.css";
 import WhatshotIcon from '@mui/icons-material/Whatshot';  
 import ExternalLink from "../Link/ExternalLink";
-import { supabase } from "@/src/utils/supabase/client";
+import { Organization } from "@/src/definitions";
 
-type CompanyCardProps = {
+export type CompanyCardProps = {
     company: {
         size: number;
         country: string;
@@ -18,10 +18,12 @@ type CompanyCardProps = {
         website_url: string;
         linkedin_url: string;
         emails: string[];
-    }
+    },
+    viewDetails:(company:Partial<Organization>) => void,
+    className?: string;
 };
 
-const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => {
+const CompanyCard: React.FC<CompanyCardProps> = ({ company, viewDetails, className }) => {
     const { size, locality, name, region, score, id, linkedin_url } = company;
     
     const sizeMap: { [key: number]: string } = {
@@ -47,18 +49,9 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => {
         )
     }
 
-    const handleOpenCompany = async () => {
-        await supabase.from('activity_log').insert([
-            { type: 'viewCompanyDetails', contact: company.id, body: company.name }
-        ]);
-        return
-    }
-
     return (
-        <div className={styles.card}>
-            <Link onClick={handleOpenCompany}  href={`/dashboard/${id}`}>
-                <h4>{name}</h4>  
-            </Link>        
+        <div onClick={() => viewDetails(company)} className={`${styles.card} ${styles[`${className}`]}`}>
+            <h4>{name}</h4>       
             <div className={styles.container}>
                 <div>
                     <p>{locality && `${locality},`} {region}</p>
