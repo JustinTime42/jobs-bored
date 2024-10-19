@@ -1,4 +1,3 @@
-import { capitolizeLocation } from '@/src/utils/utils';
 import styles from './Location.module.css';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -9,7 +8,7 @@ type LocationProps = {
 const Location = ({location, handleRemoveLocation}: LocationProps) => {
     return (
         <div className={styles.location}>
-            <li>{location.location.formatted_address}</li>
+            <li>{location.formatted_address}</li>
             <button className={styles.removeButton} onClick={() => handleRemoveLocation(location)}><CloseIcon /></button>
         </div>
     );

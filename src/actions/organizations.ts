@@ -21,6 +21,7 @@ export const saveOrganizations = async (organizations: any[]) => {
 };
 
 export const getLocalOrganizations = async (locations: string[]) => {
+    console.log("Getting local organizations", locations)
     const { data, error } = await supabaseAdmin
     .rpc('get_organizations_with_scores', {
         location_ids: locations
@@ -79,10 +80,11 @@ export const getFavoriteCompanies = async (userId: string) => {
     return data.map((d: any) => d.details) as Organization[];
 }
 
-export const scrapeEmails = async (startUrl: string) => {
+export const scrapeEmails = async (startUrls: string[]) => {
     try {
-        const emailScraper = httpsCallable(functions, 'emailScraper');
-        const { data } = await emailScraper({startUrl});
+        const emailScraper = httpsCallable(functions, 'scrapeEmails');
+        const { data } = await emailScraper({websites:startUrls});
+        console.log("Emails scraped:", data);
         return data;
     }
     catch (e) {
@@ -102,7 +104,8 @@ export const scrapeEmailsALL = async () => {
                 .from('organizations')
                 .select('website_url')
                 .not('website_url', 'is', null)
-                .is('emails', null)
+                // .is('emails', null)
+                .containedBy('emails', [])
                 .range(from, from + pageSize - 1);
 
             if (error) {
@@ -116,17 +119,12 @@ export const scrapeEmailsALL = async () => {
             } else {
                 hasMoreData = false;
             }
-            console.log('Scraping emails for:', Object.keys(data));
+            // console.log('Scraping emails for:', Object.keys(data));
         }
         console.log("Data length", allData.length)
         console.log("First Element", allData[0])
-        await scrapeEmails(allData[5].website_url);
-        await scrapeEmails(allData[0].website_url);
-        allData.forEach(async (org: {website_url:string}, i: number) => {
-            setTimeout(async () => {
-                await scrapeEmails(org.website_url);
-            }, i * 100);
-        });
+        const website_urls = allData.map((org: {website_url:string}) => org.website_url);
+        scrapeEmails(website_urls);
     }
     catch (e) {
         throw new Error(`Failed to scrape emails: ${e}`);

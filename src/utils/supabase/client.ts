@@ -17,6 +17,23 @@ export const getUser = async () => {
   if (error) {
     throw new Error("Auth session missing!");
   }
+  const { data, error: fetchError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  if (!data) {
+    await supabase
+      .from('users')
+      .insert({ 
+        id: user.id, 
+        email: user.email, 
+        name: user.user_metadata.name,
+        avatar_url: user.user_metadata.avatar_url,
+        user_name: user.user_metadata.user_name,
+      });
+  }
   return user;
 };
 

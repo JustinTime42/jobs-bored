@@ -38,11 +38,6 @@ export default function NavPanel({ children }: Props) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const { user, loading, error, fetchUser } = useUserContext();
   const [ activeMenu, setActiveMenu ] = React.useState<string | null>(null);
-  
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
 
   useEffect(() => {
     const lastPathSegment = pathname?.split('/').pop();
@@ -127,7 +122,7 @@ export default function NavPanel({ children }: Props) {
             aria-label="Open navigation"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: "none" } }} // Show only on mobile
+            sx={{ mr: 2, display: { lg: "none" } }} // Show only on mobile
             >
             <MenuIcon />
             </IconButton>
@@ -154,7 +149,7 @@ export default function NavPanel({ children }: Props) {
       </MuiAppBar>
       <Box
         component="nav"
-        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        sx={{ width: { lg: drawerWidth }, flexShrink: { lg: 0 } }}
         aria-label="Navigation drawer"
       >
         {/* Mobile drawer */}
@@ -166,7 +161,7 @@ export default function NavPanel({ children }: Props) {
             keepMounted: true, // Better performance on mobile
           }}
           sx={{
-            display: { xs: 'block', md: 'none' }, // Only display on mobile
+            display: { xs: 'block', lg: 'none' }, // Only display on mobile
             '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
           }}
         >
@@ -176,7 +171,7 @@ export default function NavPanel({ children }: Props) {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', md: 'block' }, // Hide on mobile
+            display: { xs: 'none', lg: 'block' }, // Hide on mobile
             '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
           }}
           open

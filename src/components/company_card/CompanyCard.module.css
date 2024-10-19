@@ -1,13 +1,13 @@
 .card {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: space-between;
-  padding: 1.5rem;
+  align-items: start;
+  padding: 1rem;
   border-radius: 0.5rem;
   background-color: hsl(var(--card-background));
   box-shadow: 0 0.5rem 1rem hsl(var(--shadow));
   transition: background-color 0.3s;
-  width: 500px;
   cursor: pointer;
 }
 
@@ -15,21 +15,9 @@
   background-color: hsl(var(--btn-background-hover));
 }
 
-.container {
-  display: flex;
-  flex-direction: row;
-
-  justify-content: space-between;
-  align-items: center;
-}
-.emails {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 150px;
-  overflow-y: auto;
-  padding: 1em;
+.links {
+  flex: 0 0 25%;
+  text-align: end;
 }
 
 .details {

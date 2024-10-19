@@ -18,9 +18,9 @@ const Favorites = () => {
     const [ activeOrganization, setActiveOrganization ] = useState<string | null>(null);
     const [favoriteCompanies, setFavoriteCompanies] = useState<any[]>([]);
     const router = useRouter();
-    useEffect(() => {
-        fetchUser();
-    }, [fetchUser]);
+    // useEffect(() => {
+    //     fetchUser();
+    // }, [fetchUser]);
 
     useEffect(() => {
         if (user) {

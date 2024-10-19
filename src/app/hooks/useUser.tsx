@@ -8,11 +8,9 @@ const useUser = () => {
     const [error, setError] = useState<any>(null);
 
     const fetchUser = useCallback(async () => {
-        console.log("trying to fetch user")
         setLoading(true);
         try {
             const user = await getUser();
-            console.log("fetched user", user);
             setUser(user);
         } catch (error:any) {
             console.error("Error fetching user", error);

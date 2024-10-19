@@ -10,10 +10,6 @@ export default function AuthButton() {
   const { user, loading, error, fetchUser } = useUserContext();
   const router = useRouter();
 
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
   const handleLogin = async () => {
     try {
       await signInWithGitHub();

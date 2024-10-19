@@ -8,10 +8,13 @@ const useLocalOrganizations = (locations?: any[]) => {
 
     const fetchOrganizations = async () => {
         
-        if (!locations) return 
+        if (!locations) {
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         try {
-            const locationIds = locations.map(l => l.location.id);
+            const locationIds = locations.map(l => l.id);
             console.log(locationIds)
             const data = await getLocalOrganizations(locationIds);
             console.log(data)

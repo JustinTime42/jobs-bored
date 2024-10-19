@@ -8,10 +8,6 @@ import Image from "next/image";
 export default function Header() {
   const { user, loading, error, fetchUser } = useUserContext();
 
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
   return (
       <nav className="w-full flex justify-center border-b border-b-foreground/10">
         <Link href='/'><Image src="/logo2.png" alt="Logo" width={256} height={128} /></Link>

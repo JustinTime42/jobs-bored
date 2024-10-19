@@ -1,9 +1,11 @@
 
-import {onCall} from "firebase-functions/v2/https";
+import {onCall, onRequest} from "firebase-functions/v2/https";
 import {Organization, Person} from "./definitions";
 import {createClient} from "@supabase/supabase-js";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import {CloudTasksClient} from "@google-cloud/tasks";
+const tasksClient = new CloudTasksClient();
 
 const validOrganizationKeys = [
     "id",
@@ -146,6 +148,7 @@ export const addLocation = onCall(async (request: any) => {
                 break;
             }
         }
+        updateLocation({...newLocation, page: currentPage});
         // Deduplicate allPeople based on id
         allPeople = allPeople.reduce((uniquePeople: Person[], person: Person) => {
             if (!uniquePeople.some((p) => p.id === person.id)) {
@@ -198,6 +201,8 @@ export const addLocation = onCall(async (request: any) => {
             }
             return cleanedOrg;
         });
+        const enqueueResult = await enqueueScrapingTasks(allUrls);
+        console.log("Enqueue result:", enqueueResult);
         console.log("Organizations found:", allOrganizations);
         await saveOrganizations(allOrganizations);
         await savePeople(allPeople);
@@ -266,6 +271,24 @@ export const convertPlaceToLocation = (place: any) => {
         formatted_address: place.formatted_address,
     };
 };
+export const updateLocation = async (location: any) => {
+    const supabaseAdmin = createAdminClient();
+    try {
+        const {data, error} = await supabaseAdmin
+            .from("locations")
+            .update(location)
+            .eq("id", location.id)
+            .select();
+        if (error) {
+            console.error("Error during update:", JSON.stringify(error));
+            throw error;
+        }
+        return data?.[0];
+    } catch (e) {
+        console.error(`Failed to update locations: ${JSON.stringify(e)}`);
+        return [];
+    }
+};
 
 export const saveLocation = async (location: any) => {
     const supabaseAdmin = createAdminClient();
@@ -285,160 +308,252 @@ export const saveLocation = async (location: any) => {
     }
 };
 
-export const emailScraper = onCall({timeoutSeconds: 300, memory: "4GiB"}, async (req: any) => {
-    const supabaseAdmin = createAdminClient();
-    const {startUrl} = req.data;
-    console.log("Starting URL:", startUrl);
+export const scrapeEmails = onCall({timeoutSeconds: 300, memory: "4GiB"}, async (request: any) => {
+    const {websites} = request.data;
+    console.log("Scraping emails for websites:", websites);
+    try {
+        const result = await enqueueScrapingTasks(websites);
+        console.log("Enqueue result:", result);
+        return {message: "Email scraping tasks enqueued"};
+    } catch (e) {
+        console.error("Error scraping emails:", e);
+        return [];
+    }
+});
 
-    if (!startUrl) {
-        console.log("No start URL provided.");
-        return;
+export const enqueueScrapingTasks = async (websites: string[]) => {
+    if (!websites || !Array.isArray(websites)) {
+        return {error: "Invalid request: Missing websites"};
     }
 
-    const maxDepth = 3;
-    const startTime = Date.now();
-    const maxDuration = 60 * 1000; // 1 minute in milliseconds
+    const project = "jobs-bored-47992";
+    const location = "us-central1"; // Update to your Cloud Functions region
+    const queue = "email-scraping-queue"; // Name of your Cloud Tasks queue
 
-    const visitedUrls = new Set<string>();
-    const emails = new Set<string>();
+    const parent = tasksClient.queuePath(project, location, queue);
 
-    const commonTlds = [".com", ".net", ".gov", ".org", ".biz", ".edu", ".io", ".co", ".us", ".uk", ".ca", ".au"];
-    let domain: string;
+    const tasks = websites.map((websiteUrl: string) => {
+        const payload = {startUrl: websiteUrl};
+
+        // Construct the request body
+        const task: any = {
+            httpRequest: {
+                httpMethod: "POST",
+                url: `https://${location}-${project}.cloudfunctions.net/emailScraper`,
+                headers: {"Content-Type": "application/json"},
+                body: Buffer.from(JSON.stringify(payload)),
+                // Optionally, add authentication
+                // oidcToken: {
+                //     serviceAccountEmail: "<your-service-account>@<project-id>.iam.gserviceaccount.com",
+                // },
+                dispatchDeadline: {
+                    seconds: 1800, // 30 minutes
+                },
+            },
+        };
+
+        return tasksClient.createTask({parent, task});
+    });
 
     try {
-        const urlObj = new URL(startUrl);
-        domain = urlObj.hostname;
+        // Wait for all tasks to be created
+        await Promise.all(tasks);
+        console.log("Tasks created successfully");
+        return {message: "Tasks created successfully"};
     } catch (error) {
-        console.log("Invalid start URL.");
-        await supabaseAdmin
-            .from("organizations")
-            .update({unreachable_url: true})
-            .eq("website_url", startUrl);
-        return;
+        console.error("Error creating tasks:", error);
+        return {error: "Error creating tasks"};
     }
+};
 
-    let userAgentIndex = 0;
-
-    // Initialize the queue with the start URL at depth 0
-    const queue: { url: string; depth: number }[] = [];
-    queue.push({url: startUrl, depth: 0});
-
-    while (queue.length > 0) {
-        if (Date.now() - startTime > maxDuration) {
-            console.log("Max duration reached.");
-            break;
+export const emailScraper = onRequest({timeoutSeconds: 400, memory: "4GiB"}, async (req, res) => {
+    try {
+        const supabaseAdmin = createAdminClient();
+        if (req.method !== "POST") {
+            res.status(405).send("Method Not Allowed");
+            return;
         }
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const {url, depth} = queue.shift()!;
-
-        if (depth > maxDepth) {
-            continue;
+        const {startUrl} = req.body;
+        if (!startUrl) {
+            console.log("No start URL provided.");
+            res.status(400).send("Bad Request: Missing startUrl");
+            return;
         }
+        console.log("Starting URL:", startUrl);
 
-        if (visitedUrls.has(url)) {
-            continue;
-        }
-        console.log(`Processing (Depth ${depth}): ${url}`);
-        visitedUrls.add(url);
+        const maxDepth = 2;
+        const maxLinksPerPage = 20;
+        const maxPages = 50;
+        const maxContentLength = 1024 * 1024 * 2;
+        let pagesProcessed = 0;
+        const startTime = Date.now();
+        const maxDuration = 120 * 1000; // 2 minute in milliseconds
 
-        // Rotate User-Agent
-        const userAgent = userAgentList[userAgentIndex % userAgentList.length];
-        userAgentIndex++;
+        const visitedUrls = new Set<string>();
+        const emails = new Set<string>();
 
-        // Politeness delay
-        await delay(2000); // 2-second delay between requests
+        const commonTlds = [".com", ".net", ".gov", ".org", ".biz", ".edu", ".io", ".co", ".us", ".uk", ".ca", ".au"];
+        let domain: string;
 
         try {
-            const response = await axios.get(url, {
-                headers: {
-                    "User-Agent": userAgent,
-                },
-            });
+            const urlObj = new URL(startUrl);
+            domain = urlObj.hostname;
+        } catch (error) {
+            console.log("Invalid start URL.");
+            await supabaseAdmin
+                .from("organizations")
+                .update({unreachable_url: true})
+                .eq("website_url", startUrl);
+            res.status(400).send("Bad Request: Invalid startUrl");
+            return;
+        }
 
-            if (response.status !== 200 && url === startUrl) {
-                console.log("Unreachable website:", url);
-                await supabaseAdmin
-                    .from("organizations")
-                    .update({unreachable_url: true})
-                    .eq("website_url", startUrl);
+        let userAgentIndex = 0;
+
+        // Initialize the queue with the start URL at depth 0
+        const queue: { url: string; depth: number }[] = [];
+        queue.push({url: startUrl, depth: 0});
+
+        while (queue.length > 0) {
+            if (Date.now() - startTime > maxDuration) {
+                console.log("Max duration reached.");
+                break;
+            }
+
+            if (pagesProcessed >= maxPages) {
+                console.log("Max pages processed.");
+                break;
+            }
+
+            const nextItem = queue.shift();
+            if (!nextItem) {
                 continue;
             }
 
-            const $ = cheerio.load(response.data);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const {url, depth} = nextItem;
 
-            // Extract emails from mailto links
-            $("a[href^='mailto:']").each((i, elem) => {
-                const href = $(elem).attr("href");
-                if (href) {
-                    const email = href.split(":")[1];
-                    const cleanedEmail = cleanEmail(email, domain, commonTlds);
-                    if (cleanedEmail) {
-                        console.log("Found email (mailto):", cleanedEmail);
-                        emails.add(cleanedEmail);
-                    }
-                }
-            });
-
-            // Extract emails from text within <p> and heading tags
-            let textContent = "";
-            $("p, h1, h2, h3, h4, h5, h6").each((i, elem) => {
-                textContent += $(elem).text() + " ";
-            });
-
-            const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-            const foundEmails = textContent.match(emailRegex);
-            if (foundEmails) {
-                for (const email of foundEmails) {
-                    const cleanedEmail = cleanEmail(email, domain, commonTlds);
-                    if (cleanedEmail) {
-                        console.log("Found email (text):", cleanedEmail);
-                        emails.add(cleanedEmail);
-                    }
-                }
+            if (depth > maxDepth) {
+                continue;
             }
 
-            // Collect links to follow
-            const linksToFollow: string[] = [];
+            if (visitedUrls.has(url)) {
+                continue;
+            }
+            console.log(`Processing (Depth ${depth}): ${url}`);
+            visitedUrls.add(url);
 
-            $("a").each((i, elem) => {
-                const href = $(elem).attr("href");
-                if (href) {
-                    let newUrl: string;
-                    try {
-                        newUrl = new URL(href, url).href;
-                    } catch (error) {
-                        return;
+            // Rotate User-Agent
+            const userAgent = userAgentList[userAgentIndex % userAgentList.length];
+            userAgentIndex++;
+
+            // Politeness delay
+            await delay(2000); // 2-second delay between requests
+
+            try {
+                const response = await axios.get(url, {
+                    headers: {
+                        "User-Agent": userAgent,
+                    },
+                    maxContentLength: maxContentLength,
+                });
+
+                if (response.status !== 200 && url === startUrl) {
+                    console.log("Unreachable website:", url);
+                    await supabaseAdmin
+                        .from("organizations")
+                        .update({unreachable_url: true})
+                        .eq("website_url", startUrl);
+                    continue;
+                }
+
+                const $ = cheerio.load(response.data);
+
+                // Extract emails from mailto links
+                $("a[href^='mailto:']").each((i, elem) => {
+                    const href = $(elem).attr("href");
+                    if (href) {
+                        const email = href.split(":")[1];
+                        const cleanedEmail = cleanEmail(email, domain, commonTlds);
+                        if (cleanedEmail) {
+                            console.log("Found email (mailto):", cleanedEmail);
+                            emails.add(cleanedEmail);
+                        }
                     }
-                    const newUrlObj = new URL(newUrl);
-                    if (newUrlObj.hostname === domain && !visitedUrls.has(newUrl)) {
-                        linksToFollow.push(newUrl);
+                });
+
+                // Extract emails from text within <p> and heading tags
+                let textContent = "";
+                $("p, h1, h2, h3, h4, h5, h6").each((i, elem) => {
+                    textContent += $(elem).text() + " ";
+                });
+
+                const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+                const foundEmails = textContent.match(emailRegex);
+                if (foundEmails) {
+                    for (const email of foundEmails) {
+                        const cleanedEmail = cleanEmail(email, domain, commonTlds);
+                        if (cleanedEmail) {
+                            console.log("Found email (text):", cleanedEmail);
+                            emails.add(cleanedEmail);
+                        }
                     }
                 }
-            });
 
-            // Add new URLs to the queue with incremented depth
-            for (const link of linksToFollow) {
-                queue.push({url: link, depth: depth + 1});
+                // Collect links to follow
+                const linksToFollow: string[] = [];
+
+                $("a").each((i, elem) => {
+                    const href = $(elem).attr("href");
+                    if (href) {
+                        let newUrl: string;
+                        try {
+                            newUrl = new URL(href, url).href;
+                        } catch (error) {
+                            return;
+                        }
+                        const newUrlObj = new URL(newUrl);
+                        if (newUrlObj.hostname === domain && !visitedUrls.has(newUrl)) {
+                            linksToFollow.push(newUrl);
+                            if (linksToFollow.length >= maxLinksPerPage) {
+                                return false;
+                            }
+                        }
+                    }
+                    return;
+                });
+
+                // Add new URLs to the queue with incremented depth
+                for (const link of linksToFollow) {
+                    queue.push({url: link, depth: depth + 1});
+                }
+            } catch (error) {
+                console.log(`Error fetching ${url}:`, (error as Error).message);
+                continue;
             }
-        } catch (error) {
-            console.log(`Error fetching ${url}:`, (error as Error).message);
-            // Handle errors silently or log them as needed
+            pagesProcessed++;
         }
+
+        console.log("Emails found:", Array.from(emails));
+
+        const {error} = await supabaseAdmin
+            .from("organizations")
+            .update({emails: Array.from(emails)})
+            .eq("website_url", startUrl);
+
+        if (error) {
+            console.error("Error updating emails:", error);
+            res.status(500).send("Internal Server Error");
+            return;
+        }
+
+        res.status(200).send("Email Scraping Completed Successfully");
+        return;
+    } catch (e) {
+        console.error("Error scraping emails:", e);
+        res.status(500).send("Internal Server Error");
+        return;
     }
-
-    console.log("Emails found:", Array.from(emails));
-
-    const {data, error} = await supabaseAdmin
-        .from("organizations")
-        .update({emails: Array.from(emails)})
-        .eq("website_url", startUrl);
-
-    if (error) {
-        throw error;
-    }
-
-    return data;
 });
 
 function cleanEmail(email: string, domain: string, commonTlds: string[]): string | null {

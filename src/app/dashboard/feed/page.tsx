@@ -14,16 +14,14 @@ import { supabase } from "@/src/utils/supabase/client";
 const Feed = () => {
     const { user, loading: userLoading, error: userError, fetchUser } = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
-    const { organizations, loading: orgLoading, error: orgError } = useLocalOrganizations(userDetails.locations);
+    const { organizations, loading: orgLoading, error: orgError } = useLocalOrganizations(userDetails?.locations);
     const [ activeOrganization, setActiveOrganization ] = useState<string | null>(null);
     const router = useRouter();
-    useEffect(() => {
-        fetchUser();
-    }, [fetchUser]);
 
     useEffect(() => {
         if (user) {
             getUserDetails(user.id).then((data) => {
+                console.log("user Details", data)
                 setUserDetails(data);
             });
         }
@@ -51,7 +49,7 @@ const Feed = () => {
     if (!user) {
         return router.push('/');
     }
-    if (userDetails.locations.length === 0) {
+    if (userDetails?.locations?.length === 0) {
         return (
             <div>
                 <h1>Dashboard</h1>
@@ -67,7 +65,7 @@ const Feed = () => {
         );
     }
     return (
-        <div className={styles.container}>
+        <div className={`${styles.container} flex-none basis-[400px] xl:basis-[500px]`}>
             <div className={styles.feed}>
                 {organizations.map((organization) => (
                     <CompanyCard 

@@ -1,9 +1,11 @@
 import React from "react";
-import { capitolizeLocation } from "@/src/utils/utils";
-import Link from "next/link";
+import { capitolize } from "@/src/utils/utils";
 import styles from "./CompanyCard.module.css";
-import WhatshotIcon from '@mui/icons-material/Whatshot';  
+import WhatshotIcon from '@mui/icons-material/Whatshot'; 
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import LinkIcon from '@mui/icons-material/Link'; 
 import ExternalLink from "../Link/ExternalLink";
+import PeopleIcon from '@mui/icons-material/People';
 import { Organization } from "@/src/definitions";
 
 export type CompanyCardProps = {
@@ -50,21 +52,21 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, viewDetails, classNa
     }
 
     return (
-        <div onClick={() => viewDetails(company)} className={`${styles.card} ${styles[`${className}`]}`}>
-            <h4>{name}</h4>       
-            <div className={styles.container}>
+        <div onClick={() => viewDetails(company)} className={`${styles.card} ${styles[`${className}`]} w-[400px] xl:w-[500px]`}> 
+            <div>
+            <h4>{name}</h4>
+                <p>{locality && `${capitolize(locality)},`} {capitolize(region)}</p>
+                
+                {/* <Score /> */}
+            </div>
+            <div className={styles.links}>
+                <p><PeopleIcon style={{marginBottom:"8px"}}/> {sizeMap[size]}</p>
                 <div>
-                    <p>{locality && `${locality},`} {region}</p>
-                    <p>Size: {sizeMap[size]}</p>
-                    <Score />
+                    <ExternalLink href={linkedin_url}><LinkedInIcon/></ExternalLink>
+                    <ExternalLink href={company.website_url}><LinkIcon/></ExternalLink>
                 </div>
-                <div>
-                    <ExternalLink href={linkedin_url}>LinkedIn</ExternalLink>
-                    <ExternalLink href={company.website_url}>Website</ExternalLink>
-                </div>
-                {/* <div className={styles.emails}>            
-                    {company.emails?.map(email => <a key={email} href={`mailto:${email}`}>{email}</a>)}
-                </div> */}
+
+
             </div>
         </div>
     );

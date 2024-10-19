@@ -18,9 +18,8 @@
 }
 
 .feed {
-  margin-left: 1rem;
   border-right: 1px solid #e0e0e0;
-  flex: 0 0 500px;
+  /* flex: 0 0 500px; */
   height: 100vh;
   overflow-y: scroll;
 }

@@ -17,6 +17,7 @@
   "main": "lib/index.js",
   "type": "module",
   "dependencies": {
+    "@google-cloud/tasks": "^5.5.1",
     "@supabase/supabase-js": "^2.45.3",
     "axios": "^1.7.7",
     "cheerio": "^1.0.0",
