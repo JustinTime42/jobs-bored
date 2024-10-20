@@ -9,44 +9,42 @@ import AsyncButton from "@/src/components/async_button/AsyncButton";
 import { getCompanyPeople, getPersonEmails } from "@/src/actions/apolloPeople";
 import { useUserContext } from "../../app/context/UserContext";
 
-const CompanyDetails = ( { companyId, userId  }: { companyId: string, userId: string }) => {
+const CompanyDetails = ( { company, userId, isActive  }: { company: Organization, userId: string, isActive: boolean }) => {
     const { user, loading: userLoading, error: userError, fetchUser } = useUserContext();
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [companyDetails, setCompanyDetails] = useState<Organization | null>(null);
     const [people, setPeople] = useState<Person[]>([]);
     const [isFavorite, setIsFavorite] = useState<boolean>(false);
 
     useEffect(() => {
-        if (!user) {
-            return;
-        }
-        getCompanyDetails(companyId, userId).then((data) => {
-            setCompanyDetails(data);
-            setIsFavorite(data.user_organizations?.some((org) => org.user_id === userId) || false);
-        });
-        getPeopleInOrganization(companyId).then((data) => {
-            setPeople(data);
-        });
-    }, [companyId]);
+        if (isActive){
+            setIsLoading(true);
+            getPeopleInOrganization(company.id).then((data) => {
+                setPeople(data);
+                setIsLoading(false);
+            });
+        }   
+    }, [isActive]);
 
     const handleGetEmail = async (id: string) => {
         await getPersonEmails(id)
-        return await getPeopleInOrganization(companyId).then((data) => {
+        return await getPeopleInOrganization(company.id).then((data) => {
             setPeople(data);
         });
     }
 
     const handleAddToFavorites = async () => {
-        await addCompanyToFavorites(userId, companyId);
+        await addCompanyToFavorites(userId, company.id);
         return setIsFavorite(true);
     }
     const handleRemoveFromFavorites = async () => {
-        await removeCompanyFromFavorites(user.id, companyId);
+        await removeCompanyFromFavorites(user.id, company.id);
         return setIsFavorite(false);
     }
 
     const handleGetCompanyPeople = async () => {
-        const people = await getCompanyPeople(companyId);
-        getCompanyDetails(companyId, user.id).then((data) => {
+        const people = await getCompanyPeople(company.id);
+        getCompanyDetails(company.id, user.id).then((data) => {
             setCompanyDetails(data);
         });
 
@@ -57,36 +55,29 @@ const CompanyDetails = ( { companyId, userId  }: { companyId: string, userId: st
         return await scrapeEmailsALL();
     }
 
-    if (!companyDetails) {
-        return <p>Loading...</p>;
-    }
     return (
         <div className={styles.container}>
             <div className={styles.company}>          
                 <div>
-                    <div><h3>{companyDetails.name}</h3>
+                    <div>
                         {
                         isFavorite ? <AsyncButton label="Remove Favorite" asyncAction={handleRemoveFromFavorites} />:
                         <AsyncButton label="Add To Favorites" asyncAction={handleAddToFavorites} />
                         } 
                     </div>
-                    {companyDetails.website_url && <ExternalLink href={companyDetails.website_url}>Website</ExternalLink>}
-                    {companyDetails.linkedin_url && <ExternalLink href={companyDetails.linkedin_url}>LinkedIn</ExternalLink>}
-                    {companyDetails.twitter_url && <ExternalLink href={companyDetails.twitter_url}>Twitter</ExternalLink>}
-                    {companyDetails.facebook_url && <ExternalLink href={companyDetails.facebook_url}>Facebook</ExternalLink>}
                     
                 </div>
                 <div>
-                    {companyDetails.phone && <p>{companyDetails.phone}</p>}
-                    {companyDetails.emails && <div className={styles.emails}>{companyDetails.emails.map(email => <a key={email} href={`mailto:${email}`}>{email}</a>)}</div>}
+                    {company.phone && <p>{company.phone}</p>}
+                    {company.emails && <div className={styles.emails}>{company.emails.map(email => <a key={email} href={`mailto:${email}`}>{email}</a>)}</div>}
                     {/* <AsyncButton label="scrape emails" asyncAction={handleScrapeEmails} /> */}
                 </div>
-                <img className={styles.company_logo} src={companyDetails.logo_url} alt={companyDetails.name} />
+                
 
             </div>
             <div>
                 {
-                    !companyDetails.fetched_people && <AsyncButton label="Find More People" asyncAction={handleGetCompanyPeople} />
+                    !company.fetched_people && <AsyncButton label="Find More People" asyncAction={handleGetCompanyPeople} />
                 }            
                 {people.map((person) => (
                     <div key={person.id} className={styles.person}>

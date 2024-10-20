@@ -18,20 +18,17 @@ const Favorites = () => {
     const [ activeOrganization, setActiveOrganization ] = useState<string | null>(null);
     const [favoriteCompanies, setFavoriteCompanies] = useState<any[]>([]);
     const router = useRouter();
-    // useEffect(() => {
-    //     fetchUser();
-    // }, [fetchUser]);
 
-    useEffect(() => {
-        if (user) {
-            getUserDetails(user.id).then((data) => {
-                setUserDetails(data);
-            });
-            getFavoriteCompanies(user.id).then((data) => {
-                setFavoriteCompanies(data);
-            })
-        }
-    },[JSON.stringify(user)]);
+    // useEffect(() => {
+    //     if (user) {
+    //         getUserDetails(user.id).then((data) => {
+    //             setUserDetails(data);
+    //         });
+    //         getFavoriteCompanies(user.id).then((data) => {
+    //             setFavoriteCompanies(data);
+    //         })
+    //     }
+    // },[JSON.stringify(user)]);
 
     const handleOpenCompany = async (company:Partial<Organization>) => {
         console.log('Opening company:', company);
@@ -73,15 +70,14 @@ const Favorites = () => {
             <div className={styles.feed}>
                 {favoriteCompanies.map((organization) => (
                     <CompanyCard 
-                        className={activeOrganization === organization.id ? 'active' : ''} 
-                        viewDetails={handleOpenCompany} 
+                        className={activeOrganization === organization.id ? 'active' : ''}
                         company={organization} 
                         key={organization.id}/>
                 ))}
             </div>
             <div className={styles.details}>
                 {activeOrganization && (
-                    <CompanyDetails companyId={activeOrganization} userId={user.id}/>
+                    <CompanyDetails company={activeOrganization} userId={user.id}/>
                 )}
                 </div>
         </div>

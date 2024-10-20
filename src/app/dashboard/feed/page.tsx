@@ -10,6 +10,7 @@ import CompanyCard, { CompanyCardProps } from "@/src/components/company_card/Com
 import styles from './Feed.module.css';
 import CompanyDetails from "@/src/components/company_details/CompanyDetails";
 import { supabase } from "@/src/utils/supabase/client";
+import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 
 const Feed = () => {
     const { user, loading: userLoading, error: userError, fetchUser } = useUserContext();
@@ -27,16 +28,18 @@ const Feed = () => {
         }
     },[JSON.stringify(user)]);
 
-    const handleOpenCompany = async (company:Partial<Organization>) => {
-        console.log('Opening company:', company);
-        const {data, error} = await supabase.from('activity_log').insert([
-            { type: 'viewCompanyDetails', contact: company.id, body: company.name }
-        ]);
-        if (error) {
-            console.error('Error inserting new activity log:', error);
-            return;
+    const handleOpenCompany = async (expanded: boolean, org: Organization) => {
+        if (expanded) {
+            const {data, error} = await supabase.from('activity_log').insert([
+                { type: 'viewCompanyDetails', contact: org.id, body: org.name }
+            ]);
+            setActiveOrganization(org.id);
+            if (error) {
+                console.error('Error inserting new activity log:', error);
+                return;
+            }
+            return
         }
-        setActiveOrganization(company.id || null);
         return
     }
 
@@ -65,23 +68,40 @@ const Feed = () => {
         );
     }
     return (
-        <div className={`${styles.container} flex-none basis-[400px] xl:basis-[500px]`}>
-            <div className={styles.feed}>
-                {organizations.map((organization) => (
-                    <CompanyCard 
-                        className={activeOrganization === organization.id ? 'active' : ''} 
-                        viewDetails={handleOpenCompany} 
-                        company={organization} 
-                        key={organization.id}/>
-                ))}
-            </div>
-            <div className={styles.details}>
-                {activeOrganization && (
-                    <CompanyDetails companyId={activeOrganization} userId={user.id}/>
-
-                )}
-                </div>
+        <div className={styles.feed}>
+            {organizations.map((organization) => (
+                <Accordion onChange={(e, x)=>handleOpenCompany(x, organization)} key={organization.id}>
+                    <AccordionSummary expandIcon>
+                    <CompanyCard                          
+                        company={organization}
+                    />
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <CompanyDetails 
+                            company={organization} 
+                            userId={user.id}
+                            isActive={activeOrganization === organization.id}
+                        />
+                    </AccordionDetails>
+                </Accordion>
+            ))}
         </div>
+
+            // <div className={styles.feed}>
+            //     {organizations.map((organization) => (
+            //         <CompanyCard 
+            //             className={activeOrganization === organization.id ? 'active' : ''} 
+            //             viewDetails={handleOpenCompany} 
+            //             company={organization} 
+            //             key={organization.id}/>
+            //     ))}
+            // </div>
+            // <div className={styles.details}>
+            //     {activeOrganization && (
+            //         <CompanyDetails companyId={activeOrganization} userId={user.id}/>
+
+            //     )}
+            // </div>
     );
 }
 

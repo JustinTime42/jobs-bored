@@ -5,6 +5,7 @@ import WhatshotIcon from '@mui/icons-material/Whatshot';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import LinkIcon from '@mui/icons-material/Link'; 
 import ExternalLink from "../Link/ExternalLink";
+import { Facebook, Twitter } from "@mui/icons-material";
 import PeopleIcon from '@mui/icons-material/People';
 import { Organization } from "@/src/definitions";
 
@@ -19,14 +20,17 @@ export type CompanyCardProps = {
         score: number;
         website_url: string;
         linkedin_url: string;
+        twitter_url: string;
+        facebook_url: string;
         emails: string[];
+        logo_url: string;
     },
-    viewDetails:(company:Partial<Organization>) => void,
+    // viewDetails:(company:Partial<Organization>) => void,
     className?: string;
 };
 
-const CompanyCard: React.FC<CompanyCardProps> = ({ company, viewDetails, className }) => {
-    const { size, locality, name, region, score, id, linkedin_url } = company;
+const CompanyCard: React.FC<CompanyCardProps> = ({ company, className }) => {
+    const { size, locality, name, region, score, id, linkedin_url, twitter_url, facebook_url, logo_url } = company;
     
     const sizeMap: { [key: number]: string } = {
         0: '1-10',
@@ -52,19 +56,18 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, viewDetails, classNa
     }
 
     return (
-        <div onClick={() => viewDetails(company)} className={`${styles.card} ${styles[`${className}`]} w-[400px] xl:w-[500px]`}> 
-            <div>
+        <div className={`${styles.card} ${styles[`${className}`]}`}> 
+        <img className={styles.company_logo} src={logo_url} alt={company.name} />
             <h4>{name}</h4>
-                <p>{locality && `${capitolize(locality)},`} {capitolize(region)}</p>
-                
+            
                 {/* <Score /> */}
-            </div>
             <div className={styles.links}>
-                <p><PeopleIcon style={{marginBottom:"8px"}}/> {sizeMap[size]}</p>
-                <div>
-                    <ExternalLink href={linkedin_url}><LinkedInIcon/></ExternalLink>
-                    <ExternalLink href={company.website_url}><LinkIcon/></ExternalLink>
-                </div>
+                <p style={{marginRight:"1em"}}>{locality && `${capitolize(locality)},`} {capitolize(region)}</p>
+                <p><PeopleIcon /> {sizeMap[size]}</p>
+                <ExternalLink href={linkedin_url}><LinkedInIcon/></ExternalLink>
+                <ExternalLink href={company.website_url}><LinkIcon/></ExternalLink>
+                {twitter_url && <ExternalLink href={twitter_url}><Twitter /></ExternalLink>}
+                {facebook_url && <ExternalLink href={facebook_url}><Facebook /></ExternalLink>}
 
 
             </div>

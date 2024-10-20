@@ -18,8 +18,11 @@
 }
 
 .feed {
-  border-right: 1px solid #e0e0e0;
+  /* border-right: 1px solid #e0e0e0; */
   /* flex: 0 0 500px; */
+
+  width: 100%;
+  max-width: 1920px;
   height: 100vh;
   overflow-y: scroll;
 }
