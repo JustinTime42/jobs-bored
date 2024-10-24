@@ -75,7 +75,7 @@ const UserAccount = () => {
         console.log(userDetails.locations)
         setUserDetails({
             ...userDetails,
-            locations: userDetails.locations.filter((l: any) => l.id !== l.id),
+            locations: userDetails.locations.filter((l: any) => l.id !== location.id),
         });
     };
 
