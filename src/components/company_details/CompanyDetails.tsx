@@ -8,6 +8,8 @@ import { getPeopleInOrganization } from "@/src/actions/people";
 import AsyncButton from "@/src/components/async_button/AsyncButton";
 import { getCompanyPeople, getPersonEmails } from "@/src/actions/apolloPeople";
 import { useUserContext } from "../../app/context/UserContext";
+import { Email, Facebook, GitHub, LinkedIn, Twitter } from "@mui/icons-material";
+import EmailLink from "../email_link/EmailLink";
 
 const CompanyDetails = ( { company, userId, isActive  }: { company: Organization, userId: string, isActive: boolean }) => {
     const { user, loading: userLoading, error: userError, fetchUser } = useUserContext();
@@ -59,17 +61,10 @@ const CompanyDetails = ( { company, userId, isActive  }: { company: Organization
         <div className={styles.container}>
             <div className={styles.company}>          
                 <div>
-                    <div>
-                        {
-                        isFavorite ? <AsyncButton label="Remove Favorite" asyncAction={handleRemoveFromFavorites} />:
-                        <AsyncButton label="Add To Favorites" asyncAction={handleAddToFavorites} />
-                        } 
-                    </div>
-                    
                 </div>
                 <div>
                     {company.phone && <p>{company.phone}</p>}
-                    {company.emails && <div className={styles.emails}>{company.emails.map(email => <a key={email} href={`mailto:${email}`}>{email}</a>)}</div>}
+                    
                     {/* <AsyncButton label="scrape emails" asyncAction={handleScrapeEmails} /> */}
                 </div>
                 
@@ -78,31 +73,31 @@ const CompanyDetails = ( { company, userId, isActive  }: { company: Organization
             <div>
                 {
                     !company.fetched_people && <AsyncButton label="Find More People" asyncAction={handleGetCompanyPeople} />
-                }            
+                }       
+                {company.emails && <div className={styles.emails}>{company.emails.map(email => <EmailLink key={email} email={email}/>)}</div>}     
                 {people.map((person) => (
-                    <div key={person.id} className={styles.person}>
+                    <div key={person.id} className={styles.person}>      
                         <img className={styles.person_photo} src={person.photo_url} alt={person.name} />
-                        <div className={styles.person_info}>
-                            <p>{person.name}</p>
-                            <p>{person.title && `Title: ${person.title}`}</p>
-                            <p>{person.headline && `Headline: ${person.headline}`}</p>
-                            <p>{person.city && person.city}{person.state && `, ${person.state}`} </p>
-                            
-                        </div>
+                        <p>{person.name}</p>                        
+                        <p>{person.title && `${person.title}`}</p>
+                        <p>{person.headline && `${person.headline}`}</p>
+                        <p>{person.city && person.city}{person.state && `, ${person.state}`} </p>
                         <div className={styles.person_links}>
-                            {person.linkedin_url && <ExternalLink href={person.linkedin_url }>LinkedIn</ExternalLink>}
-                            {person.facebook_url && <ExternalLink href={person.facebook_url}>Facebook</ExternalLink>}
-                            {person.twitter_url && <ExternalLink href={person.twitter_url}>Twitter</ExternalLink>}
-                            {person.github_url && <ExternalLink href={person.github_url}>GitHub</ExternalLink>}
-                            {person.email !== "Email Unavailable" ? <p><a href={`mailto:${person.email}`}>{person.email}</a></p> :
-                            <p>{person.email}</p>}
-                            
-                        </div>
-                        {!person.email &&
+                            {person.linkedin_url && <ExternalLink href={person.linkedin_url }><LinkedIn /></ExternalLink>}
+                            {person.facebook_url && <ExternalLink href={person.facebook_url}><Facebook /></ExternalLink>}
+                            {person.twitter_url && <ExternalLink href={person.twitter_url}><Twitter /></ExternalLink>}
+                            {person.github_url && <ExternalLink href={person.github_url}><GitHub /></ExternalLink>}
+                            {!person.email &&
                             <div>
                                 <AsyncButton label="Find Email" asyncAction={() => handleGetEmail(person.id)}  />
                             </div>
-                        }
+                            }
+                            {person.email && <EmailLink email={person.email} />}
+                            {person.email === "Email Unavailable" ? <p>{person.email}</p> :
+                            null}
+                            
+                        </div>
+
 
                             
 

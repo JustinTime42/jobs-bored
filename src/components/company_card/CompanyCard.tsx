@@ -5,7 +5,7 @@ import WhatshotIcon from '@mui/icons-material/Whatshot';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import LinkIcon from '@mui/icons-material/Link'; 
 import ExternalLink from "../Link/ExternalLink";
-import { Facebook, Twitter } from "@mui/icons-material";
+import { Facebook, FavoriteBorder, Twitter } from "@mui/icons-material";
 import PeopleIcon from '@mui/icons-material/People';
 import { Organization } from "@/src/definitions";
 
@@ -68,6 +68,7 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, className }) => {
                 <ExternalLink href={company.website_url}><LinkIcon/></ExternalLink>
                 {twitter_url && <ExternalLink href={twitter_url}><Twitter /></ExternalLink>}
                 {facebook_url && <ExternalLink href={facebook_url}><Facebook /></ExternalLink>}
+                <FavoriteBorder />
 
 
             </div>

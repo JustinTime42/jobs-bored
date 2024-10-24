@@ -29,6 +29,7 @@ const Feed = () => {
     },[JSON.stringify(user)]);
 
     const handleOpenCompany = async (expanded: boolean, org: Organization) => {
+        console.log('Opening company:', org);
         if (expanded) {
             const {data, error} = await supabase.from('activity_log').insert([
                 { type: 'viewCompanyDetails', contact: org.id, body: org.name }

@@ -1,0 +1,25 @@
+.copyTextContainer {
+  display: flex;
+  align-items: center;
+}
+
+.text {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.iconButton {
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  cursor: copy;
+}
+
+.copyIcon {
+  color: #333;
+}
+
+.copyIcon:hover {
+  color: #000;
+}
