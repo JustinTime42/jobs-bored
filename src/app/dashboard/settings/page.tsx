@@ -32,6 +32,7 @@ const UserAccount = () => {
             { event: '*', schema: 'public', table: 'users_locations' },
             (payload) => {
                 getUserDetails(user.id).then((data) => {
+                    console.log("new user data", data)
                     setUserDetails(data);
                 });
             }
@@ -49,7 +50,7 @@ const UserAccount = () => {
     }, [JSON.stringify(user)]);
 
     const handleAddLocation = async () => {
-        if (!newLocation.place_id) {
+        if (!newLocation.formatted_address) {
             alert('Please select a valid location');
             return;
         }
@@ -71,6 +72,11 @@ const UserAccount = () => {
             .delete()
             .eq('user_id', user.id)
             .eq('location_id', location.id);
+        console.log(userDetails.locations)
+        setUserDetails({
+            ...userDetails,
+            locations: userDetails.locations.filter((l: any) => l.id !== l.id),
+        });
     };
 
     const handleGenerateCSV = async () => {
