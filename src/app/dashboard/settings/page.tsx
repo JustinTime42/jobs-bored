@@ -14,7 +14,7 @@ import { supabase } from '@/src/utils/supabase/client';
 const UserAccount = () => {
     const { user, loading, error, fetchUser } = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
-    const [newLocation, setNewLocation] = useState({});
+    const [newLocation, setNewLocation] = useState<any>({});
     const router = useRouter();
 
     useEffect(() => {
@@ -49,7 +49,7 @@ const UserAccount = () => {
     }, [JSON.stringify(user)]);
 
     const handleAddLocation = async () => {
-        if (!newLocation) {
+        if (!newLocation.place_id) {
             alert('Please select a valid location');
             return;
         }
