@@ -98,7 +98,7 @@ export const getLocalPeople = async (location: string) => {
     }
 };
 
-export const getPersonEmails = async (id: string) => {
+export const getPersonEmail = async (id: string) => {
 	try {
 		const requestHeaders = {
 			"Content-Type": "application/json",
@@ -116,7 +116,7 @@ export const getPersonEmails = async (id: string) => {
 		if (!emailAddress) {
 			await supabaseAdmin
 			.from('people').update({email: 'Email Unavailable'}).eq('id', id);
-			return '';
+			return 'Email Unavailable';
 		} else {
 			const {data, error} = await supabaseAdmin
 				.from('people').update({email: emailAddress}).eq('id', id);

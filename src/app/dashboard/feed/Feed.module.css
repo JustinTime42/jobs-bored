@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  width: 100%;
   min-height: 100vh;
 }
 
@@ -10,7 +9,6 @@
   border-right: 1px solid #e0e0e0;
   height: 100%;
   flex: 1;
-  max-width: 400px;
 }
 
 .favoriteItem {
@@ -19,7 +17,6 @@
 
 .feed {
   border-right: 1px solid #e0e0e0;
-  /* flex: 0 0 500px; */
   height: 100vh;
   overflow-y: scroll;
 }

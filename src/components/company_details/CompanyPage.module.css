@@ -3,10 +3,7 @@
   margin-left: 1em;
 }
 .company {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-around;
+  text-align: center;
   width: 100%;
   padding: 20px;
   border-bottom: 1px solid #ccc;
@@ -44,6 +41,17 @@
 .emails {
   display: flex;
   flex-direction: column;
+  align-items: start;
+  justify-content: start;
+}
+
+.email {
+  display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+}
+
+.favorite_button {
+  cursor: pointer;
 }

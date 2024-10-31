@@ -7,7 +7,7 @@ import Header from "../components/Header";
 export default function Index() {
 
   return (
-    <div>
+    <div className={styles.container}>
         <Header />
         <section className={styles.hero}>
             <div className={styles.heroCard}>

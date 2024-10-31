@@ -1,3 +1,11 @@
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-right: auto;
+  margin-left: auto;
+  height: 100vh;
+}
+
 .benefits {
   background-color: #e0e0e0;
   text-align: center;

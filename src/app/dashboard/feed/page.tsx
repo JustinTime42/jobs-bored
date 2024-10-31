@@ -10,12 +10,24 @@ import CompanyCard, { CompanyCardProps } from "@/src/components/company_card/Com
 import styles from './Feed.module.css';
 import CompanyDetails from "@/src/components/company_details/CompanyDetails";
 import { supabase } from "@/src/utils/supabase/client";
+import { useMediaQuery } from 'react-responsive'
+import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
+import Filters from "@/src/components/feed_filters/Filters";
+import { FiltersState } from "@/src/components/feed_filters/Filters";
 
 const Feed = () => {
-    const { user, loading: userLoading, error: userError, fetchUser } = useUserContext();
+    const isMobile = useMediaQuery({ maxWidth: 1200 });
+    const { user, loading: userLoading, error: userError } = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
-    const { organizations, loading: orgLoading, error: orgError } = useLocalOrganizations(userDetails?.locations);
-    const [ activeOrganization, setActiveOrganization ] = useState<string | null>(null);
+    const [filters, setFilters] = useState<FiltersState>({} as FiltersState);
+    const [getOrgParams, setGetOrgParams] = useState<FiltersState>({} as FiltersState);
+    const { 
+        organizations, 
+        loading: orgLoading, 
+        error: orgError,
+    } = 
+        useLocalOrganizations(userDetails?.locations, getOrgParams);
+    const [ activeOrganization, setActiveOrganization ] = useState<Organization | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -27,24 +39,57 @@ const Feed = () => {
         }
     },[JSON.stringify(user)]);
 
-    const handleOpenCompany = async (company:Partial<Organization>) => {
-        console.log('Opening company:', company);
-        const {data, error} = await supabase.from('activity_log').insert([
-            { type: 'viewCompanyDetails', contact: company.id, body: company.name }
-        ]);
-        if (error) {
-            console.error('Error inserting new activity log:', error);
-            return;
+    useEffect(() => {
+        setActiveOrganization(null);
+    },[filters.localities, filters.userId]);
+
+    const toggleFavorites = () => {        
+        setFilters((prev:any) => {
+            if (prev.userId) {
+                return { ...prev, userId: null };
+            } else {
+                return { ...prev, userId: user.id };
+            }
+        });
+    };
+
+    const toggleLocality = (locality: string) => {
+        console.log("Toggling locality")
+        console.log("filters", filters)
+        setFilters((prev:FiltersState) => {
+            const newLocality = prev.localities?.includes(locality)
+                ? prev.localities?.filter((l:any) => l !== locality)
+                : [...prev.localities || [], locality];
+            return { ...prev, localities: newLocality };
+        });
+    };
+
+    const handleOpenCompany = async (expanded: boolean, org: Organization) => {
+        console.log('Opening company:', org);
+        if (expanded) {
+            const {data, error} = await supabase.from('activity_log').insert([
+                { type: 'viewCompanyDetails', contact: org.id, body: org.name }
+            ]);
+            setActiveOrganization(org);
+            if (error) {
+                console.error('Error inserting new activity log:', error);
+                return;
+            }
+            return
         }
-        setActiveOrganization(company.id || null);
         return
+    }
+
+    const getFilteredOrgs = async() => {
+        console.log("Filters", filters.localities)
+        setGetOrgParams(filters);
     }
 
     if (userLoading || orgLoading) {
         return <p>Loading...</p>;
     }
     if (userError || orgError) {
-        return <p>Error: </p>;
+        return <p>Error: {userError?.message} {orgError?.message} </p>;
     }
     if (!user) {
         return router.push('/');
@@ -56,33 +101,70 @@ const Feed = () => {
                 <p>No organizations found. Add a location in your<ExternalLink href='/settings'>account settings</ExternalLink>.</p>
             </div>
         );
-    } else if (organizations.length === 0) {
+    } 
+    if (isMobile) {
         return (
-            <div>
-                <h1>Dashboard</h1>
-                <p>No organizations found in your locations. Note: If you just added a new location, wait a few minutes and then refresh the page. It can take up to 2 minutes for us to gather information on relevant companies and add them to your feed for the first time.</p>
+            <div className={styles.feed}>
+                <Filters 
+                    userLocations={userDetails.locations}
+                    filters={filters}
+                    toggleFavorites={toggleFavorites}
+                    toggleLocality={toggleLocality}
+                    submitQuery={getFilteredOrgs}
+                />    
+            {organizations.map((organization) => (
+                <Accordion onChange={(e, x)=>handleOpenCompany(x, organization)} key={organization.id}>
+                    <AccordionSummary expandIcon>
+                    <CompanyCard                         
+                        company={organization}
+                    />
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <CompanyDetails 
+                            company={organization} 
+                            userId={user.id}
+                            isActive={activeOrganization?.id === organization.id}
+                        />
+                    </AccordionDetails>
+                </Accordion>
+            ))}
+        </div>
+        )
+    }
+    else {
+        return (
+            <div className={`${styles.container} flex-none basis-[400px]`}>
+                <div className={styles.feed}>
+                    <Filters 
+                        userLocations={userDetails.locations}
+                        filters={filters}
+                        toggleFavorites={toggleFavorites}
+                        toggleLocality={toggleLocality}
+                        submitQuery={getFilteredOrgs}
+                    />                        
+                    {organizations.map((organization) => (
+                        <div key={organization.id} onClick={() => handleOpenCompany(true, organization)}>
+                            <CompanyCard                                 
+                                className={activeOrganization?.id === organization.id ? 'active' : ''} 
+                                company={organization} 
+                                key={organization.id}
+                            />
+                        </div>
+                    ))}
+                </div>
+                <div className={styles.details}>
+                    {activeOrganization && (
+                        <CompanyDetails 
+                            company={activeOrganization} 
+                            userId={user.id} 
+                            isActive={true}
+                        />
+    
+                    )}
+                    </div>
             </div>
         );
     }
-    return (
-        <div className={`${styles.container} flex-none basis-[400px] xl:basis-[500px]`}>
-            <div className={styles.feed}>
-                {organizations.map((organization) => (
-                    <CompanyCard 
-                        className={activeOrganization === organization.id ? 'active' : ''} 
-                        viewDetails={handleOpenCompany} 
-                        company={organization} 
-                        key={organization.id}/>
-                ))}
-            </div>
-            <div className={styles.details}>
-                {activeOrganization && (
-                    <CompanyDetails companyId={activeOrganization} userId={user.id}/>
-
-                )}
-                </div>
-        </div>
-    );
 }
 
 export default Feed

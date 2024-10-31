@@ -27,7 +27,7 @@ import { usePathname } from 'next/navigation'
 import { useUserContext } from '@/src/app/context/UserContext';
 import styles from './NavPanel.module.css';
 
-const drawerWidth = 240;
+const drawerWidth = 200;
 
 interface Props {
   children: React.ReactNode;
@@ -65,19 +65,6 @@ export default function NavPanel({ children }: Props) {
                 <FeedIcon />
               </ListItemIcon>
               <ListItemText primary={"Company Feed"} />
-            </ListItemButton>
-          </ListItem>
-          <ListItem 
-            className={activeMenu === "favorites" ? styles.activeMenu : ""}
-            style={{padding:0}} 
-            disablePadding 
-            component={Link}
-            href="/dashboard/favorites">
-            <ListItemButton>
-              <ListItemIcon>
-                <FavoriteIcon />
-              </ListItemIcon>
-              <ListItemText primary={"Favorites"} />
             </ListItemButton>
           </ListItem>
           <ListItem 

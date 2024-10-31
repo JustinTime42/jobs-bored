@@ -1,13 +1,18 @@
 import { getLocalOrganizations } from '@/src/actions/organizations';
+import { FiltersState } from '@/src/components/feed_filters/Filters';
 import { useState, useEffect } from 'react';
 
-const useLocalOrganizations = (locations?: any[]) => {
+type Filters = {
+    userId:string
+    localities: string[];
+}
+
+const useLocalOrganizations = (locations: any[],  filters: FiltersState) => {
     const [organizations, setOrganizations] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<any>(null);
 
-    const fetchOrganizations = async () => {
-        
+    const fetchOrganizations = async () => {        
         if (!locations) {
             setLoading(false);
             return;
@@ -15,8 +20,9 @@ const useLocalOrganizations = (locations?: any[]) => {
         setLoading(true);
         try {
             const locationIds = locations.map(l => l.id);
-            console.log(locationIds)
-            const data = await getLocalOrganizations(locationIds);
+            const localities = filters.localities?.length > 0 ? filters.localities : null;
+            console.log(localities)
+            const data = await getLocalOrganizations(locationIds, filters.userId || null, localities);
             console.log(data)
             setOrganizations(data);
         } catch (error) {
@@ -27,10 +33,11 @@ const useLocalOrganizations = (locations?: any[]) => {
     };
 
     useEffect(() => {
+        console.log("filters", filters)
         fetchOrganizations();
-    }, [locations]);
+    }, [locations, filters.userId, filters.localities]);
 
-    return { organizations, loading, error };
+    return { organizations, loading, error, fetchOrganizations };
 }
 
 export default useLocalOrganizations;
