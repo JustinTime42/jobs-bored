@@ -61,7 +61,7 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, className }) => {
         return (
             <div className={`${styles.card_wide} ${styles[`${className}`]}`}> 
             <img className={styles.company_logo_wide} src={logo_url} alt={company.name} />
-                <h4>{name}</h4>
+                <h4>{shortName}</h4>
                 
                     {/* <Score /> */}
                 <div className={styles.links_wide}>
@@ -71,9 +71,6 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, className }) => {
                     <ExternalLink href={company.website_url}><LinkIcon/></ExternalLink>
                     {twitter_url && <ExternalLink href={twitter_url}><Twitter /></ExternalLink>}
                     {facebook_url && <ExternalLink href={facebook_url}><Facebook /></ExternalLink>}
-                    <FavoriteBorder />
-    
-    
                 </div>
             </div>
         );

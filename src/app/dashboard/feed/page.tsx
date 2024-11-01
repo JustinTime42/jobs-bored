@@ -80,6 +80,16 @@ const Feed = () => {
         return
     }
 
+    const handleToggleFavorites = async (company: Organization) => {
+        if (isFavorite) {
+            await removeCompanyFromFavorites(user.id, company.id);
+            return setIsFavorite(false);
+        } else {
+            await addCompanyToFavorites(userId, company.id);
+            return setIsFavorite(true);
+        }
+    }
+
     const getFilteredOrgs = async() => {
         console.log("Filters", filters.localities)
         setGetOrgParams(filters);

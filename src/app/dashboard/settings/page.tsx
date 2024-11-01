@@ -50,8 +50,8 @@ const UserAccount = () => {
     }, [JSON.stringify(user)]);
 
     const handleAddLocation = async () => {
-        if (!newLocation.formatted_address) {
-            alert('Please select a valid location');
+        if (!newLocation.locality) {
+            alert('Invalid: You must select a valid city from the dropdown');
             return;
         }
         try {
