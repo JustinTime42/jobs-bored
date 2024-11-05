@@ -14,7 +14,6 @@ const CopyText: React.FC<CopyTextProps> = ({ text }) => {
   const handleCopyClick = async () => {
     try {
       if (navigator.clipboard) {
-        await navigator.permissions.query({ name: 'clipboard-write' as PermissionName });
         await navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds

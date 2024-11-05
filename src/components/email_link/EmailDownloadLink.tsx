@@ -17,8 +17,6 @@ const EmailDownloadLink = ({ email, id }: { email : string | null, id: string}) 
         let email = '';
         try {
             if (navigator.clipboard) {
-                await navigator.permissions.query({ name: 'clipboard-write' as PermissionName });
-        // If email is not 'Email Unavailable' or null, copy it to the clipboard
                 if (currentEmail && currentEmail !== 'Email Unavailable') {
                     await navigator.clipboard.writeText(currentEmail).then(() => {
                         email = currentEmail;
