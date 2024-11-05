@@ -50,7 +50,9 @@ const UserAccount = () => {
     }, [JSON.stringify(user)]);
 
     const handleAddLocation = async () => {
-        if (!newLocation.locality) {
+        console.log(newLocation)
+        const locality = newLocation.address_components?.find((component: any) => component.types.includes('locality'))?.long_name;
+        if (!locality) {
             alert('Invalid: You must select a valid city from the dropdown');
             return;
         }
