@@ -14,6 +14,8 @@ import { useMediaQuery } from 'react-responsive'
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import Filters from "@/src/components/feed_filters/Filters";
 import { FiltersState } from "@/src/components/feed_filters/Filters";
+import { generateCSV } from "@/src/actions/exportCSV";
+import AsyncButton from "@/src/components/async_button/AsyncButton";
 
 const Feed = () => {
     const isMobile = useMediaQuery({ maxWidth: 1200 });
@@ -85,6 +87,17 @@ const Feed = () => {
         setGetOrgParams(filters);
     }
 
+    const handleGenerateCSV = async () => {
+        const orgIds = organizations.map((o: any) => o.id);
+        const csvData = await generateCSV(orgIds);
+        const blob = new Blob([csvData], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'organizations.csv';
+        a.click();
+    }   
+
     if (userLoading || orgLoading) {
         return <p>Loading...</p>;
     }
@@ -105,13 +118,17 @@ const Feed = () => {
     if (isMobile) {
         return (
             <div className={styles.feed}>
-                <Filters 
-                    userLocations={userDetails.locations}
-                    filters={filters}
-                    toggleFavorites={toggleFavorites}
-                    toggleLocality={toggleLocality}
-                    submitQuery={getFilteredOrgs}
-                />    
+                <div className={styles.feedMenu}>
+                    <AsyncButton asyncAction={handleGenerateCSV} label="Generate CSV" />
+                    <Filters 
+                        userLocations={userDetails.locations}
+                        filters={filters}
+                        toggleFavorites={toggleFavorites}
+                        toggleLocality={toggleLocality}
+                        submitQuery={getFilteredOrgs}
+                    />
+                </div>
+  
             {organizations.map((organization) => (
                 <Accordion onChange={(e, x)=>handleOpenCompany(x, organization)} key={organization.id}>
                     <AccordionSummary expandIcon>
@@ -135,13 +152,16 @@ const Feed = () => {
         return (
             <div className={`${styles.container} flex-none basis-[400px]`}>
                 <div className={styles.feed}>
-                    <Filters 
-                        userLocations={userDetails.locations}
-                        filters={filters}
-                        toggleFavorites={toggleFavorites}
-                        toggleLocality={toggleLocality}
-                        submitQuery={getFilteredOrgs}
-                    />                        
+                    <div className={styles.feedMenu}>
+                        <AsyncButton asyncAction={handleGenerateCSV} label="Generate CSV" />
+                        <Filters 
+                            userLocations={userDetails.locations}
+                            filters={filters}
+                            toggleFavorites={toggleFavorites}
+                            toggleLocality={toggleLocality}
+                            submitQuery={getFilteredOrgs}
+                        />  
+                    </div>
                     {organizations.map((organization) => (
                         <div key={organization.id} onClick={() => handleOpenCompany(true, organization)}>
                             <CompanyCard                                 

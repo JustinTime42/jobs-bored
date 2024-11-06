@@ -21,6 +21,13 @@
   overflow-y: scroll;
 }
 
+.feedMenu {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding: 1em;
+}
+
 .details {
   flex: 1;
   flex-direction: column;

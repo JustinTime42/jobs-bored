@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useUserContext } from '../../context/UserContext';
 import { useRouter } from 'next/navigation';
-import { generateCSV, getUserDetails, updateUserDetails } from '@/src/actions/user';
+import { getUserDetails, updateUserDetails } from '@/src/actions/user';
 import LocationAutoComplete from './LocationAutoComplete';
 import AsyncButton from '@/src/components/async_button/AsyncButton';
 import { addLocation } from '@/src/actions/locations';
@@ -79,18 +79,7 @@ const UserAccount = () => {
             ...userDetails,
             locations: userDetails.locations.filter((l: any) => l.id !== location.id),
         });
-    };
-
-    const handleGenerateCSV = async () => {
-        const locationIds = userDetails.locations.map((l: any) => l.location.id);
-        const csvData = await generateCSV(locationIds);
-        const blob = new Blob([csvData], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'organizations.csv';
-        a.click();
-    }      
+    };   
 
     if (loading) {
         return <p>Loading...</p>;
@@ -118,8 +107,6 @@ const UserAccount = () => {
                     <AsyncButton asyncAction={handleAddLocation} label="Add Location" />
                 </div>
             </div>
-            <AsyncButton asyncAction={handleGenerateCSV} label="Generate CSV" />
-
         </div>
     );
 };
