@@ -119,7 +119,10 @@ const Feed = () => {
         return (
             <div className={styles.feed}>
                 <div className={styles.feedMenu}>
-                    <AsyncButton asyncAction={handleGenerateCSV} label="Generate CSV" />
+                    <div>
+                    <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
+                    </div>
+                    
                     <Filters 
                         userLocations={userDetails.locations}
                         filters={filters}
@@ -153,7 +156,7 @@ const Feed = () => {
             <div className={`${styles.container} flex-none basis-[400px]`}>
                 <div className={styles.feed}>
                     <div className={styles.feedMenu}>
-                        <AsyncButton asyncAction={handleGenerateCSV} label="Generate CSV" />
+                        <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
                         <Filters 
                             userLocations={userDetails.locations}
                             filters={filters}

@@ -26,6 +26,7 @@
   flex-direction: row;
   justify-content: space-around;
   padding: 1em;
+  align-items: flex-start;
 }
 
 .details {
