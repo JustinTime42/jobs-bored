@@ -119,10 +119,7 @@ const Feed = () => {
         return (
             <div className={styles.feed}>
                 <div className={styles.feedMenu}>
-                    <div>
-                    <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
-                    </div>
-                    
+                    <AsyncButton asyncAction={handleGenerateCSV} label="Export" />                    
                     <Filters 
                         userLocations={userDetails.locations}
                         filters={filters}
