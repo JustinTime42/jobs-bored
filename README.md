@@ -1,4 +1,4 @@
-<img alt="A better way to find jobs!" src="./logo.png" height="300px">
+<img alt="A better way to find jobs!" src="./public/logo.png" height="300px">
 
 # Jobs Bored
 
