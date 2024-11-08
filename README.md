@@ -7,6 +7,6 @@
 
 
 ## Contributing
-We welcome contributions to Jobs Bored! Please read our <a href="https://github.com/JustinTime42/jobs-bored/edit/main/CONTRIBUTING.md">CONTRIBUTING.md</a> file to get started.
+We welcome contributions to Jobs Bored! Please read our <a href="https://github.com/JustinTime42/jobs-bored/blob/47e4f70b347fe8a21197d60713774dea6e121aca/CONTRIBUTING.md">CONTRIBUTING.md</a> file to get started.
 
 All contributors must agree to our Contributor License Agreement (CLA) before their changes can be merged.
