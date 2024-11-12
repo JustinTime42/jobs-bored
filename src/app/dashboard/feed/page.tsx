@@ -111,7 +111,7 @@ const Feed = () => {
         return (
             <div>
                 <h1>Dashboard</h1>
-                <p>No organizations found. Add a location in your<ExternalLink href='/settings'>account settings</ExternalLink>.</p>
+                <p>No organizations found. Add a location in your<ExternalLink href='/dashboard/settings'>account settings</ExternalLink>.</p>
             </div>
         );
     } 
