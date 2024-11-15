@@ -4,16 +4,23 @@ import { Email as EmailIcon, MailOutline as MailOutlineIcon } from '@mui/icons-m
 import { getPersonEmail } from '@/src/actions/apolloPeople';
 import styles from './EmailDownloadLink.module.css';
 import { supabase } from '@/src/utils/supabase/client';
+import { useUserContext } from '@/src/app/context/UserContext';
 
 const EmailDownloadLink = ({ email, id }: { email : string | null, id: string}) => {
     const [currentEmail, setCurrentEmail] = useState(email);
     const [copied, setCopied] = useState(false);
+    const { user, loading } = useUserContext();
+    const isPaid = user?.subscription_status === 'active';
 
     const getEmail = async (id: string) => {
         return await getPersonEmail(id)
     }
 
     const handleClick = async () => {
+        if (!isPaid) {
+            alert('This feature is only available to paid users.');
+            return;
+        }
         let email = '';
         try {
             if (navigator.clipboard) {

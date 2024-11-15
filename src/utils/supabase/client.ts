@@ -44,6 +44,7 @@ export const signInWithGitHub = async () => {
       redirectTo: process.env.NEXT_PUBLIC_REDIRECT_URL,
     },
   });
+  console.log(data)
   if (error) throw error;
 };
 
