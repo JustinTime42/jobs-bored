@@ -5,11 +5,12 @@ type ButtonProps = {
     onClick: () => void;
     text: string;
     disabled?: boolean;
+    className?: string;
 };
 
-const Button: React.FC<ButtonProps> = ({ onClick, text, disabled}) => {
+const Button: React.FC<ButtonProps> = ({ onClick, text, disabled, className}) => {
     return (
-        <button onClick={onClick} className={styles.button} disabled={disabled} >
+        <button onClick={onClick} className={className} disabled={disabled} >
             {text}
         </button>
     );

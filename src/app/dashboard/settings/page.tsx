@@ -10,6 +10,11 @@ import Location from '@/src/components/location/Location';
 import { DetailsResult, Suggestion } from 'use-places-autocomplete';
 import { saveLocation } from '@/src/actions/locations';
 import { supabase } from '@/src/utils/supabase/client';
+import { loadStripe } from '@stripe/stripe-js';
+import styles from './page.module.css';
+import Button from '@/src/components/button/Button';
+import { handleNewSubscription, handlePortalSession } from '@/src/actions/stripe';
+
 
 const UserAccount = () => {
     const { user, loading, error, fetchUser } = useUserContext();
@@ -81,8 +86,26 @@ const UserAccount = () => {
         });
     };   
 
+    const handleSubscribe = async () => {
+        const sessionId = await handleNewSubscription(user.stripe_customer_id);
+        const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_KEY!);
+    
+        if (stripe && sessionId) {
+            await stripe.redirectToCheckout({ sessionId });
+        } else {
+            console.error('Stripe initialization failed');
+        }
+    };
+    
+      const handleManageSubscription = async () => {    
+        const url = await handlePortalSession(user.stripe_customer_id);
+        if (url) {
+            window.location.href = url; 
+        }        
+      };
+
     if (loading) {
-        return <p>Loading...</p>;
+        return <p style={{marginTop: "1em"}}>Loading...</p>;
     }
     if (error) {
         return <p>Error: {error.message}</p>;
@@ -93,11 +116,25 @@ const UserAccount = () => {
     }
 
     return (
-        <div>
-            <h1>User Account</h1>
-            <p>Username: {user?.user_metadata.username}</p>
-            <p>Email: {user?.email}</p>
-            <div style={{padding: "8px", marginTop:"32px"}}>
+        <div className={styles.container}>
+      <h1 className={styles.title}>Account Management</h1>
+
+      <div className={styles.info}>
+        <p><strong>Username:</strong> {user.user_name || 'N/A'}</p>
+        <p><strong>Email:</strong> {user.email}</p>
+        <p><strong>Subscription Status:</strong> {user.subscription_status || 'Free Trial'}</p>
+      </div>
+
+      <div className={styles.buttons}>
+        {user.subscription_status !== 'active' && (
+          <Button className={styles.button} onClick={handleSubscribe} text="Subscribe Now"/>            
+        )}
+        {user.subscription_status === 'active' && (
+            <Button className={styles.button} onClick={handleManageSubscription} text="Manage Subscription" />
+        )}
+      </div>
+
+      <div className={styles.locations}>
                 <p style={{margin:"4px"}}> Locations: </p>
                 {userDetails?.locations && userDetails.locations.map((location: string, i: number) => (
                     <Location key={i} location={location} handleRemoveLocation={handleRemovelocation} />
@@ -106,8 +143,9 @@ const UserAccount = () => {
                     <LocationAutoComplete onSelectLocation={(location) => setNewLocation(location)} />
                     <AsyncButton asyncAction={handleAddLocation} label="Add Location" />
                 </div>
-            </div>
-        </div>
+      </div>
+    </div>
+
     );
 };
 
