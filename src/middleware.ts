@@ -5,7 +5,9 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
-  
+  if (req.nextUrl.pathname.startsWith('/api/stripe-webhook')) {
+    return NextResponse.next();
+  }
   const supabase = createMiddlewareClient({ req, res });
   const {
     data: { session },
