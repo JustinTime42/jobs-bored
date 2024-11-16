@@ -1,23 +1,17 @@
-import { type NextRequest } from 'next/server'
+import { type NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { updateSession } from './src/utils/supabase/middleware'
+import { updateSession } from './src/utils/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith('/api/stripe-webhook')) {
-    return NextResponse.next();
+  if (request.nextUrl.pathname === '/api/stripe-webhook') {
+    return NextResponse.next(); // Skip all middleware logic
   }
-  return await updateSession(request)
+
+  return await updateSession(request); // Continue normal middleware
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/stripe-webhook).*)', // Exclude stripe-webhook
   ],
-}
+};
