@@ -10,6 +10,7 @@ export const config = {
 };
 
 export default async function handler(req:any, res:any) {
+  console.log("stripe webhook called")
   const sig = req.headers['stripe-signature'];
 
   let event;
