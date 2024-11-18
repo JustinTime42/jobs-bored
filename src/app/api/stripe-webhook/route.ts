@@ -5,11 +5,11 @@ import { Readable } from 'stream';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
-export const config = {
-  api: {
-    bodyParser: false, // Ensure raw body for Stripe
-  },
-};
+// export const config = {
+//   api: {
+//     bodyParser: false, // Ensure raw body for Stripe
+//   },
+// };
 
 // Helper function to convert Request body to a Buffer
 async function buffer(req: NextRequest): Promise<Buffer> {
