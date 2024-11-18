@@ -5,11 +5,6 @@ import { Readable } from 'stream';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
-// export const config = {
-//   api: {
-//     bodyParser: false, // Ensure raw body for Stripe
-//   },
-// };
 
 // Helper function to convert Request body to a Buffer
 async function buffer(req: NextRequest): Promise<Buffer> {
@@ -44,10 +39,10 @@ export async function POST(req: NextRequest) {
   // Handle subscription events
   if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
     const subscription = event.data.object as Stripe.Subscription;
-
+    console.log(subscription);
     const { error } = await supabaseAdmin
       .from('users')
-      .update({ subscription_status: subscription.status })
+      .update({ subscription_status: subscription.status, stripe_subscription_id: subscription.id })
       .eq('stripe_customer_id', subscription.customer);
 
     if (error) {
