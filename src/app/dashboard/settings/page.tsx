@@ -18,17 +18,14 @@ import { handleNewSubscription, handlePortalSession } from '@/src/actions/stripe
 
 const UserAccount = () => {
     const { user, loading, error, fetchUser } = useUserContext();
-    const [userDetails, setUserDetails] = useState<any>({});
+    // const [userDetails, setUserDetails] = useState<any>({});
     const [newLocation, setNewLocation] = useState<any>({});
     const router = useRouter();
 
-    useEffect(() => {
+    useEffect(() => {   
         console.log('User:', user);
         if (user) {
-            getUserDetails(user.id).then((data) => {
-                console.log(data)
-                setUserDetails(data);
-            });
+            fetchUser();
 
             const channel = supabase
             .channel('public:users_locations')
@@ -36,10 +33,7 @@ const UserAccount = () => {
             'postgres_changes',
             { event: '*', schema: 'public', table: 'users_locations' },
             (payload) => {
-                getUserDetails(user.id).then((data) => {
-                    console.log("new user data", data)
-                    setUserDetails(data);
-                });
+                fetchUser();
             }
             )
             .subscribe((status) => {
@@ -64,10 +58,10 @@ const UserAccount = () => {
         try {
             await addLocation(newLocation, user.id);
             console.log(newLocation)
-            setUserDetails({
-                ...userDetails,
-                locations: [...userDetails.locations, newLocation],
-            });
+            // setUserDetails({
+            //     ...userDetails,
+            //     locations: [...userDetails.locations, newLocation],
+            // });
             setNewLocation({} as Suggestion);
         } catch (error) {
             throw error
@@ -79,11 +73,11 @@ const UserAccount = () => {
             .delete()
             .eq('user_id', user.id)
             .eq('location_id', location.id);
-        console.log(userDetails.locations)
-        setUserDetails({
-            ...userDetails,
-            locations: userDetails.locations.filter((l: any) => l.id !== location.id),
-        });
+        // console.log(userDetails.locations)
+        // setUserDetails({
+        //     ...userDetails,
+        //     locations: userDetails.locations.filter((l: any) => l.id !== location.id),
+        // });
     };   
 
     const handleSubscribe = async () => {
@@ -96,6 +90,20 @@ const UserAccount = () => {
             console.error('Stripe initialization failed');
         }
     };
+
+    const getSubStatus = () => {
+        if (user.subscription_status === 'active') {
+            return 'Active';
+        } else if (
+            user.subscription_status === 'trial' &&
+            new Date(user.trial_ends_at) < new Date()
+        ) {
+            return 'Expired'
+        } else if (user.subscription_status === 'trial') {
+            return 'Free Trial';
+        } else return user.subscription_status;
+    };
+
     
       const handleManageSubscription = async () => {    
         const url = await handlePortalSession(user.stripe_customer_id);
@@ -117,34 +125,34 @@ const UserAccount = () => {
 
     return (
         <div className={styles.container}>
-      <h1 className={styles.title}>Account Management</h1>
+        <h1 className={styles.title}>Account Management</h1>
 
-      <div className={styles.info}>
-        <p><strong>Username:</strong> {user.user_name || 'N/A'}</p>
-        <p><strong>Email:</strong> {user.email}</p>
-        <p><strong>Subscription Status:</strong> {user.subscription_status || 'Free Trial'}</p>
-      </div>
+        <div className={styles.info}>
+            <p><strong>Username:</strong> {user.user_name || 'N/A'}</p>
+            <p><strong>Email:</strong> {user.email}</p>
+            <p><strong>Subscription Status:</strong> {getSubStatus()}</p>
+        </div>
 
-      <div className={styles.buttons}>
-        {user.subscription_status !== 'active' && (
-          <Button className={styles.button} onClick={handleSubscribe} text="Subscribe Now"/>            
-        )}
-        {user.subscription_status === 'active' && (
-            <Button className={styles.button} onClick={handleManageSubscription} text="Manage Subscription" />
-        )}
-      </div>
+        <div className={styles.buttons}>
+            {user.subscription_status !== 'active' && (
+            <Button className={styles.button} onClick={handleSubscribe} text="Subscribe Now"/>            
+            )}
+            {user.subscription_status === 'active' && (
+                <Button className={styles.button} onClick={handleManageSubscription} text="Manage Subscription" />
+            )}
+        </div>
 
-      <div className={styles.locations}>
-                <p style={{margin:"4px"}}> Locations: </p>
-                {userDetails?.locations && userDetails.locations.map((location: string, i: number) => (
-                    <Location key={i} location={location} handleRemoveLocation={handleRemovelocation} />
-                ))}
-                <div style={{marginTop:"16px"}}>
-                    <LocationAutoComplete onSelectLocation={(location) => setNewLocation(location)} />
-                    <AsyncButton asyncAction={handleAddLocation} label="Add Location" />
-                </div>
-      </div>
-    </div>
+        <div className={styles.locations}>
+            <p style={{margin:"4px"}}> Locations: </p>
+            {user?.locations && user.locations.map((location: string, i: number) => (
+                <Location key={i} location={location} handleRemoveLocation={handleRemovelocation} />
+            ))}
+            <div style={{marginTop:"16px"}}>
+                <LocationAutoComplete onSelectLocation={(location) => setNewLocation(location)} />
+                <AsyncButton asyncAction={handleAddLocation} label="Add Location" />
+            </div>
+        </div>
+        </div>
 
     );
 };

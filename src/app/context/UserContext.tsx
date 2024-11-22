@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { supabase } from '@/src/utils/supabase/client';
 import { handleNewUser } from '@/src/actions/stripe';
+import { createUserDetails, getUserDetails } from '@/src/actions/user';
 
 interface UserContextProps {
   user: any;
@@ -23,14 +24,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error) throw error;
-
       if (user) {
-        const { data: profile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-		
+        const profile = await getUserDetails(user.id);
         if (!profile?.stripe_customer_id) {
           await handleNewUser(user); // Setup new user if not yet done
         }

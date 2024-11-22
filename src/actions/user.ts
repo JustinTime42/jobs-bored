@@ -1,31 +1,40 @@
 'use server'
+import { Location, User } from "../definitions";
 import { supabaseAdmin } from "../utils/supabase/admin";
 import { supabase } from "../utils/supabase/client";
 
+type Locations = {
+    locations: Location[];
+};
 export const getUserDetails = async (uid: string) => {
 
-    const { data: userData } = await supabaseAdmin
-        .from('users')
-        .select('*')
-        .eq('id', uid)
-        .single();
+    const { data, error } = await supabaseAdmin
+    .from('users')
+    .select(`
+        *,
+        users_locations (
+            locations(*)
+        )
+    `)
+    .eq('id', uid);
 
-    if (!userData) {
-        throw new Error('User not found');
+    if (error) {
+        throw new Error('Failed to fetch user data: ' + error.message);
     }
-    try {
-        const {data, error} = await supabaseAdmin
-            .from('users_locations')
-            .select('locations(*)')
-            .eq('user_id', uid);
-        if (error) throw error;
-        const locations = data.map((l: any) => l.locations);
-        console.log("locations", locations)
-        console.log("data", data)
-        return { ...userData, locations: locations};
-    } catch (error) {
-        console.error('Error fetching locations:', error);
+
+    if (!data || data.length === 0) {
+        return null;
     }
+    console.log("User Data:", data[0].users_locations.map((loc:Locations) => loc.locations));
+    // Handle multiple rows, if expected
+    const userData = data.map((user) => ({
+        ...user,
+        locations: user.users_locations.map((loc:Locations) => loc.locations),
+    }));
+
+    // console.log("User Data with Locations:", userData);
+
+    return userData[0] as User;
 };
 
 export const createUserDetails = async (user: any) => {

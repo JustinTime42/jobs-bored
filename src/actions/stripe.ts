@@ -12,13 +12,17 @@ export const handleNewUser = debounce(async (user: any) => {
 		email: user.email,
 		metadata: { userId: user.id },
 	  });
-  
 	  const { data, error } = await supabaseAdmin
 		.from('users')
-		.update({
-		  stripe_customer_id: customer.id,
-		  trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-		  subscription_status: 'trial',
+		.insert({
+			id: user.id, 
+			email: user.email, 
+			name: user.user_metadata.name,
+			avatar_url: user.user_metadata.avatar_url,
+			user_name: user.user_metadata.user_name,
+			stripe_customer_id: customer.id,
+			trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+			subscription_status: 'trial',
 		})
 		.eq('id', user.id);
   
@@ -31,7 +35,7 @@ export const handleNewUser = debounce(async (user: any) => {
 	  console.error('Error creating customer:', error);
 	  throw error;
 	}
-  }, 500);
+  }, 1000);
   
 
 export const handleNewSubscription = async (stripeCustomerId: string) => {

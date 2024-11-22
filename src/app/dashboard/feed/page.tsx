@@ -88,6 +88,10 @@ const Feed = () => {
     }
 
     const handleGenerateCSV = async () => {
+        if (user.subscription_status !== 'active') {
+            // alert('This feature is only available to paid users.');
+            throw new Error('This feature is only available to paid users.');
+        }
         const orgIds = organizations.map((o: any) => o.id);
         const csvData = await generateCSV(orgIds);
         const blob = new Blob([csvData], { type: 'text/csv' });

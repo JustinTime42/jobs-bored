@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
   // Handle subscription events
   if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
     const subscription = event.data.object as Stripe.Subscription;
+    
     console.log(subscription);
     const { error } = await supabaseAdmin
       .from('users')
