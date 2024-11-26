@@ -7,6 +7,17 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export const handleNewUser = debounce(async (user: any) => {
 	console.log("handling new user", user);
+	const existingUser = await supabaseAdmin
+		.from('users')
+		.select('id')
+		.eq('id', user.id)
+		.single();
+
+	if (existingUser.data) {
+		console.log('User already exists:', existingUser.data);
+		return;
+	}
+	
 	try {
 	  const customer = await stripe.customers.create({
 		email: user.email,

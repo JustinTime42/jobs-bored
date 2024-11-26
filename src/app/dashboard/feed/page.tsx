@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useUserContext } from "../../context/UserContext";
 import useLocalOrganizations from "../../hooks/useLocalOrgs";
-import { getUserDetails } from "@/src/actions/user";
 import { useRouter } from 'next/navigation';
 import { Organization } from "@/src/definitions";
 import ExternalLink from "@/src/components/Link/ExternalLink";
@@ -20,7 +19,6 @@ import AsyncButton from "@/src/components/async_button/AsyncButton";
 const Feed = () => {
     const isMobile = useMediaQuery({ maxWidth: 1200 });
     const { user, loading: userLoading, error: userError } = useUserContext();
-    const [userDetails, setUserDetails] = useState<any>({});
     const [filters, setFilters] = useState<FiltersState>({} as FiltersState);
     const [getOrgParams, setGetOrgParams] = useState<FiltersState>({} as FiltersState);
     const { 
@@ -28,18 +26,9 @@ const Feed = () => {
         loading: orgLoading, 
         error: orgError,
     } = 
-        useLocalOrganizations(userDetails?.locations, getOrgParams);
+        useLocalOrganizations(user?.locations, getOrgParams);
     const [ activeOrganization, setActiveOrganization ] = useState<Organization | null>(null);
     const router = useRouter();
-
-    useEffect(() => {
-        if (user) {
-            getUserDetails(user.id).then((data) => {
-                console.log("user Details", data)
-                setUserDetails(data);
-            });
-        }
-    },[JSON.stringify(user)]);
 
     useEffect(() => {
         setActiveOrganization(null);
@@ -111,7 +100,7 @@ const Feed = () => {
     if (!user) {
         return router.push('/');
     }
-    if (userDetails?.locations?.length === 0) {
+    if (user?.locations?.length === 0) {
         return (
             <div>
                 <h1>Dashboard</h1>
@@ -125,7 +114,7 @@ const Feed = () => {
                 <div className={styles.feedMenu}>
                     <AsyncButton asyncAction={handleGenerateCSV} label="Export" />                    
                     <Filters 
-                        userLocations={userDetails.locations}
+                        userLocations={user.locations}
                         filters={filters}
                         toggleFavorites={toggleFavorites}
                         toggleLocality={toggleLocality}
@@ -159,7 +148,7 @@ const Feed = () => {
                     <div className={styles.feedMenu}>
                         <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
                         <Filters 
-                            userLocations={userDetails.locations}
+                            userLocations={user.locations}
                             filters={filters}
                             toggleFavorites={toggleFavorites}
                             toggleLocality={toggleLocality}

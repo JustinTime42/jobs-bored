@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { supabase } from '@/src/utils/supabase/client';
 import { handleNewUser } from '@/src/actions/stripe';
-import { createUserDetails, getUserDetails } from '@/src/actions/user';
+import { getUserDetails } from '@/src/actions/user';
 
 interface UserContextProps {
   user: any;
@@ -20,42 +20,67 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<any>(null);
 
   const fetchUser = useCallback(async () => {
-    setLoading(true);
+    setLoading(true); 
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error) throw error;
       if (user) {
+        console.log('Getting user details...');
         const profile = await getUserDetails(user.id);
         if (!profile?.stripe_customer_id) {
-          await handleNewUser(user); // Setup new user if not yet done
+          await handleNewUser(user);
         }
-
         setUser({ ...user, ...profile });
       } else {
-        setUser(null); // Handle user being null (e.g., logged out)
+        setUser(null); 
       }
     } catch (error: any) {
       console.error('Error fetching user:', error);
       setError(error);
       setUser(null);
     } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   }, []);
 
-  // Listen to auth state changes and update user accordingly
+  // Listen to auth state changes
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-        fetchUser(); // Always fetch the user after an auth state change
+      if (session?.user) {
+        fetchUser(); 
+      } else {
+        setUser(null);
+        setLoading(false);
+        setError(null);
       }
     });
 
-    // Fetch initial user data
-    fetchUser();
-
-    return () => data.subscription.unsubscribe(); // Clean up subscription
+    return () => data.subscription.unsubscribe(); 
   }, [fetchUser]);
+
+  useEffect(() => {
+    if (user) {
+      const channel = supabase
+        .channel('public:users_locations')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'users_locations', filter: `user_id=eq.${user.id}` },
+          async () => {
+            console.log('Realtime update received...');
+            const profile = await getUserDetails(user.id);
+            setUser((prevUser: any) => ({
+              ...prevUser,
+              ...profile,
+            }));
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel); // Clean up channel on unmount
+      };
+    }
+  }, [user]);
 
   return (
     <UserContext.Provider value={{ user, loading, error, fetchUser }}>

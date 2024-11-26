@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import { useUserContext } from '../../context/UserContext';
 import { useRouter } from 'next/navigation';
-import { getUserDetails, updateUserDetails } from '@/src/actions/user';
 import LocationAutoComplete from './LocationAutoComplete';
 import AsyncButton from '@/src/components/async_button/AsyncButton';
 import { addLocation } from '@/src/actions/locations';
@@ -18,15 +17,12 @@ import { handleNewSubscription, handlePortalSession } from '@/src/actions/stripe
 
 const UserAccount = () => {
     const { user, loading, error, fetchUser } = useUserContext();
-    // const [userDetails, setUserDetails] = useState<any>({});
     const [newLocation, setNewLocation] = useState<any>({});
     const router = useRouter();
 
     useEffect(() => {   
         console.log('User:', user);
         if (user) {
-            fetchUser();
-
             const channel = supabase
             .channel('public:users_locations')
             .on(

@@ -24,7 +24,6 @@ import AuthButton from '@/src/components/AuthButton';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'
-import { useUserContext } from '@/src/app/context/UserContext';
 import styles from './NavPanel.module.css';
 
 const drawerWidth = 200;
@@ -36,7 +35,6 @@ interface Props {
 export default function NavPanel({ children }: Props) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const { user, loading, error, fetchUser } = useUserContext();
   const [ activeMenu, setActiveMenu ] = React.useState<string | null>(null);
 
   useEffect(() => {
