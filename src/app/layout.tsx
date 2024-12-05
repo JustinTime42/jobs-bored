@@ -3,7 +3,7 @@ import { Inter, Rubik, Raleway } from 'next/font/google'
 import "./globals.css";
 import { UserProvider } from "./context/UserContext";
 import Header from "@/src/components/Header";
-
+import styles from './Index.module.css'
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000";
@@ -40,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${rubik.variable} ${raleway.variable}`}>
       <body className="bg-background text-foreground">
-        <main className="min-h-screen flex flex-col">
+        <main className={`min-h-screen flex flex-col`}>
           <UserProvider>            
             {children}
           </UserProvider>

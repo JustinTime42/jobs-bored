@@ -45,6 +45,11 @@ export interface EmploymentHistory {
     country: string;
     postal_code: string;
     fetched_people?: boolean;
+    size: number;
+    locality: string;
+    region: string;
+    score: number;
+
   }
   
   export interface Account {

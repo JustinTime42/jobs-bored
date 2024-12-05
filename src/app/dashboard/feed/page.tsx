@@ -1,94 +1,122 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useUserContext } from "../../context/UserContext";
-import useLocalOrganizations from "../../hooks/useLocalOrgs";
 import { getUserDetails } from "@/src/actions/user";
 import { useRouter } from 'next/navigation';
 import { Organization } from "@/src/definitions";
 import ExternalLink from "@/src/components/Link/ExternalLink";
-import CompanyCard, { CompanyCardProps } from "@/src/components/company_card/CompanyCard";
+import CompanyCard from "@/src/components/company_card/CompanyCard";
 import styles from './Feed.module.css';
 import CompanyDetails from "@/src/components/company_details/CompanyDetails";
-import { supabase } from "@/src/utils/supabase/client";
-import { useMediaQuery } from 'react-responsive'
-import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import Filters from "@/src/components/feed_filters/Filters";
-import { FiltersState } from "@/src/components/feed_filters/Filters";
-import { generateCSV } from "@/src/actions/exportCSV";
 import AsyncButton from "@/src/components/async_button/AsyncButton";
+import { useMediaQuery } from 'react-responsive';
+import { generateCSV } from "@/src/actions/exportCSV";
+import { getLocalOrganizations } from "@/src/actions/organizations";
+import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
+
+const initialFilters = {
+    localities: null as string[] | null,
+    userId: null,
+    page_size: 10,
+    previous_score: null,
+    previous_id: null
+};
 
 const Feed = () => {
-    const isMobile = useMediaQuery({ maxWidth: 1200 });
+    const containerRef = useRef<HTMLDivElement>(null);
+    const observer = useRef<IntersectionObserver | null>(null);
     const { user, loading: userLoading, error: userError } = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
-    const [filters, setFilters] = useState<FiltersState>({} as FiltersState);
-    const [getOrgParams, setGetOrgParams] = useState<FiltersState>({} as FiltersState);
-    const { 
-        organizations, 
-        loading: orgLoading, 
-        error: orgError,
-    } = 
-        useLocalOrganizations(userDetails?.locations, getOrgParams);
-    const [ activeOrganization, setActiveOrganization ] = useState<Organization | null>(null);
+    const [filters, setFilters] = useState(initialFilters);
+    const filtersRef = useRef(filters);
+    const [organizations, setOrganizations] = useState<Organization[]>([]);
+    const [activeOrganization, setActiveOrganization] = useState<Organization | null>(null);
+    const [orgLoading, setOrgLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
     const router = useRouter();
+    const isMobile = useMediaQuery({ maxWidth: 1200 });
+    const lastOrganizationRef = useCallback((node: HTMLDivElement) => {
+        // console.log("filters:", filters)
+        if (orgLoading) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                fetchMoreOrganizations();
+            }
+            if (node) observer.current?.observe(node);
+        });
+        if (node) observer.current.observe(node);
+    }, [orgLoading, hasMore]);
 
     useEffect(() => {
         if (user) {
-            getUserDetails(user.id).then((data) => {
-                console.log("user Details", data)
+            getUserDetails(user.id).then(async(data) => {
                 setUserDetails(data);
+                console.log(data)
+                const updatedFilters = {
+                    ...filters,
+                    localities: data.locations.map((l: any) => l.locality),
+                };
+                setFilters(updatedFilters)
+                const orgs = await getLocalOrganizations(
+                    data.locations.map((l: any) => l.id),
+                    null,
+                    updatedFilters.localities,
+                    updatedFilters.page_size,
+                    null,
+                    null
+                );
+                setOrganizations(orgs)
             });
         }
-    },[JSON.stringify(user)]);
+    }, [JSON.stringify(user)]);
 
     useEffect(() => {
-        setActiveOrganization(null);
-    },[filters.localities, filters.userId]);
+        filtersRef.current = filters;
+    }, [filters]);
 
-    const toggleFavorites = () => {        
-        setFilters((prev:any) => {
-            if (prev.userId) {
-                return { ...prev, userId: null };
-            } else {
-                return { ...prev, userId: user.id };
-            }
-        });
+    const fetchOrganizations = async (currentFilters:any) => {
+        console.log("filters", currentFilters.localities)
+        setOrgLoading(true);
+        const locationIds = userDetails?.locations?.map((l: any) => l.id) || null;
+        const data = await getLocalOrganizations(
+            locationIds,
+            currentFilters.userId,
+            currentFilters.localities,
+            currentFilters.page_size,
+            null,
+            null
+        );
+        setOrganizations(data);
+        setOrgLoading(false);
     };
 
-    const toggleLocality = (locality: string) => {
-        console.log("Toggling locality")
-        console.log("filters", filters)
-        setFilters((prev:FiltersState) => {
-            const newLocality = prev.localities?.includes(locality)
-                ? prev.localities?.filter((l:any) => l !== locality)
-                : [...prev.localities || [], locality];
-            return { ...prev, localities: newLocality };
-        });
-    };
+    const fetchMoreOrganizations = async () => {
+        if (orgLoading) return;
 
-    const handleOpenCompany = async (expanded: boolean, org: Organization) => {
-        console.log('Opening company:', org);
-        if (expanded) {
-            const {data, error} = await supabase.from('activity_log').insert([
-                { type: 'viewCompanyDetails', contact: org.id, body: org.name }
-            ]);
-            setActiveOrganization(org);
-            if (error) {
-                console.error('Error inserting new activity log:', error);
-                return;
-            }
-            return
+        setOrgLoading(true);
+        const lastOrg = organizations[organizations.length - 1];
+        const locationIds = userDetails?.locations?.map((l: any) => l.id) || null;
+        const data = await getLocalOrganizations(
+            locationIds,
+            filtersRef.current.userId,
+            filtersRef.current.localities,
+            filtersRef.current.page_size,
+            lastOrg?.score || null,
+            lastOrg?.id || null
+        );
+        if (data?.length === 0) {
+            setHasMore(false);
         }
-        return
-    }
-
-    const getFilteredOrgs = async() => {
-        console.log("Filters", filters.localities)
-        setGetOrgParams(filters);
-    }
+        if (data?.length > 0) {
+            setOrganizations((prev) => [...prev, ...data]);
+        }
+        setOrgLoading(false);
+    };
 
     const handleGenerateCSV = async () => {
-        const orgIds = organizations.map((o: any) => o.id);
+        const orgIds = organizations.map((o) => o.id);
         const csvData = await generateCSV(orgIds);
         const blob = new Blob([csvData], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -96,95 +124,99 @@ const Feed = () => {
         a.href = url;
         a.download = 'organizations.csv';
         a.click();
-    }   
+    };
 
-    if (userLoading || orgLoading) {
-        return <p>Loading...</p>;
-    }
-    if (userError || orgError) {
-        return <p>Error: {userError?.message} {orgError?.message} </p>;
-    }
+    const toggleFavorites = () => {
+        setFilters((prev) => ({ ...prev, userId: prev.userId ? null : user.id }));
+    };
+
+    const toggleLocality = (locality: string) => {
+        setFilters((prev) => ({
+            ...prev,
+            localities: prev.localities?.includes(locality)
+                ? prev.localities.filter((l:any) => l !== locality)
+                : [...(prev.localities || []), locality],
+        }));
+    };
+
+    if (userLoading) return <p>Loading...</p>;
+    if (userError) return <p>Error: {userError.message}</p>;
+
     if (!user) {
-        return router.push('/');
+        router.push('/');
+        return null;
     }
+
     if (userDetails?.locations?.length === 0) {
         return (
             <div>
                 <h1>Dashboard</h1>
-                <p>No organizations found. Add a location in your<ExternalLink href='/dashboard/settings'>account settings</ExternalLink>.</p>
+                <p>
+                    No organizations found. Add a location in your
+                    <ExternalLink href="/dashboard/settings"> account settings</ExternalLink>.
+                </p>
             </div>
         );
-    } 
-    if (isMobile) {
-        return (
-            <div className={styles.feed}>
+    }
+
+    return isMobile ? (
+        <div className={styles.feed} ref={containerRef}>
+            <div className={styles.feedMenu}>
+                <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
+                <Filters
+                    userLocations={userDetails.locations}
+                    filters={filters}
+                    toggleFavorites={toggleFavorites}
+                    toggleLocality={toggleLocality}
+                    submitQuery={() => fetchOrganizations(filters)}
+                />
+            </div>
+            {organizations.map((org, index) => (
+                <Accordion ref={index === organizations.length - 1 ? lastOrganizationRef : null} key={org.id}>
+                    <AccordionSummary>
+                        <CompanyCard company={org} />
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <CompanyDetails company={org} userId={user.id} isActive={activeOrganization?.id === org.id} />
+                    </AccordionDetails>
+                </Accordion>
+            ))}
+            <div className={styles.loadMore}>
+                {orgLoading && <p>Loading more...</p>}
+            </div>
+        </div>
+    ) : (
+        <div className={`${styles.container} flex-none basis-[400px]`}>
+            <div className={styles.feed} ref={containerRef}>
                 <div className={styles.feedMenu}>
-                    <AsyncButton asyncAction={handleGenerateCSV} label="Export" />                    
-                    <Filters 
+                    <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
+                    <Filters
                         userLocations={userDetails.locations}
                         filters={filters}
                         toggleFavorites={toggleFavorites}
                         toggleLocality={toggleLocality}
-                        submitQuery={getFilteredOrgs}
+                        submitQuery={() => fetchOrganizations(filters)}
                     />
                 </div>
-  
-            {organizations.map((organization) => (
-                <Accordion onChange={(e, x)=>handleOpenCompany(x, organization)} key={organization.id}>
-                    <AccordionSummary expandIcon>
-                    <CompanyCard                         
-                        company={organization}
-                    />
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        <CompanyDetails 
-                            company={organization} 
-                            userId={user.id}
-                            isActive={activeOrganization?.id === organization.id}
+                {organizations.map((org, index) => (
+                    <div ref={index === organizations.length - 1 ? lastOrganizationRef : null} key={org.id} onClick={() => setActiveOrganization(org)}>
+                        <CompanyCard
+                            company={org}
+                            className={activeOrganization?.id === org.id ? 'active' : ''}
                         />
-                    </AccordionDetails>
-                </Accordion>
-            ))}
-        </div>
-        )
-    }
-    else {
-        return (
-            <div className={`${styles.container} flex-none basis-[400px]`}>
-                <div className={styles.feed}>
-                    <div className={styles.feedMenu}>
-                        <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
-                        <Filters 
-                            userLocations={userDetails.locations}
-                            filters={filters}
-                            toggleFavorites={toggleFavorites}
-                            toggleLocality={toggleLocality}
-                            submitQuery={getFilteredOrgs}
-                        />  
                     </div>
-                    {organizations.map((organization) => (
-                        <div key={organization.id} onClick={() => handleOpenCompany(true, organization)}>
-                            <CompanyCard                                 
-                                className={activeOrganization?.id === organization.id ? 'active' : ''} 
-                                company={organization} 
-                                key={organization.id}
-                            />
-                        </div>
-                    ))}
-                </div>
-                <div className={styles.details}>
-                    {activeOrganization && (
-                        <CompanyDetails 
-                            company={activeOrganization} 
-                            userId={user.id} 
-                            isActive={true}
-                        />
-    
-                    )}
-                    </div>
+                ))}
             </div>
-        );
-    }
-}
+            <div className={styles.details}>
+                {activeOrganization && (
+                    <CompanyDetails company={activeOrganization} userId={user.id} isActive />
+                )}
+            </div>
+            <div className={styles.loadMore}>
+                {orgLoading && <p>Loading more...</p>}
+            </div>
+        </div>
+    );
+};
 
-export default Feed
+export default Feed;

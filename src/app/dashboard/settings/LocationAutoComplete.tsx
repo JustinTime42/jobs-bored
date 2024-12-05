@@ -42,7 +42,6 @@ const LocationAutoComplete: React.FC<LocationAutoCompleteProps> = ({ onSelectLoc
                 type="text"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                disabled={!ready}
                 placeholder="Search Cities..."
             />
             <div className="autocomplete-dropdown-container">

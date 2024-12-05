@@ -149,8 +149,9 @@ export default function NavPanel({ children }: Props) {
           }}
           sx={{
             display: { xs: 'block', lg: 'none' }, // Only display on mobile
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }, 
           }}
+
         >
           {drawer}
         </Drawer>
@@ -172,7 +173,7 @@ export default function NavPanel({ children }: Props) {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
+          // width: { md: `calc(100% - ${drawerWidth}px)` },
         }}
       >
         <Toolbar />{/*  Spacer to prevent content from being hidden under AppBar */}
