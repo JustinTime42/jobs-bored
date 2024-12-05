@@ -53,9 +53,9 @@ const Filters = ({userLocations, filters, toggleFavorites, toggleLocality, submi
                 <FormGroup>
                     <FormControlLabel
                         control={<Checkbox checked={!!filters.userId} onChange={toggleFavorites} />}
-                        label="Favorites"
+                        label="Favorites Only"
                     />
-                    {userLocations?.map((location) => (
+                    {/* {userLocations?.map((location) => (
                         <FormControlLabel
                             key={location.locality}
                             control={
@@ -66,7 +66,7 @@ const Filters = ({userLocations, filters, toggleFavorites, toggleLocality, submi
                             }
                             label={location.locality}
                         />
-                    ))}
+                    ))} */}
                     <FormControlLabel
                         control={<Checkbox checked={!!includeRemote} onChange={() => toggleRemote()} />}
                         label="Include Remote"

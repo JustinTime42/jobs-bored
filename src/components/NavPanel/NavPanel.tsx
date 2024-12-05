@@ -86,8 +86,9 @@ export default function NavPanel({ children }: Props) {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
+    <div className={styles.container}>
+      <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
       <MuiAppBar
         position="fixed"
         sx={{
@@ -179,6 +180,7 @@ export default function NavPanel({ children }: Props) {
         <Toolbar />{/*  Spacer to prevent content from being hidden under AppBar */}
         {children}
       </Box>
-    </Box>
+      </Box>
+    </div>
   );
 }

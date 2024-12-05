@@ -14,11 +14,12 @@ import { useMediaQuery } from 'react-responsive';
 import { generateCSV } from "@/src/actions/exportCSV";
 import { getLocalOrganizations } from "@/src/actions/organizations";
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
+import { fetchMoreOrganizations, fetchOrganizations } from "./utils";
 
 const initialFilters = {
     localities: null as string[] | null,
     userId: null,
-    page_size: 10,
+    page_size:20,
     previous_score: null,
     previous_id: null
 };
@@ -29,7 +30,6 @@ const Feed = () => {
     const { user, loading: userLoading, error: userError } = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
     const [filters, setFilters] = useState(initialFilters);
-    const filtersRef = useRef(filters);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [activeOrganization, setActiveOrganization] = useState<Organization | null>(null);
     const [orgLoading, setOrgLoading] = useState(false);
@@ -41,13 +41,13 @@ const Feed = () => {
         if (orgLoading) return;
         if (observer.current) observer.current.disconnect();
         observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && hasMore) {
-                fetchMoreOrganizations();
+            if (entries[0].isIntersecting) {
+                handleFetchMore(organizations, userDetails, filters, hasMore);
             }
             if (node) observer.current?.observe(node);
         });
         if (node) observer.current.observe(node);
-    }, [orgLoading, hasMore]);
+    }, [orgLoading, hasMore, userDetails, filters, organizations]);
 
     useEffect(() => {
         if (user) {
@@ -72,48 +72,40 @@ const Feed = () => {
         }
     }, [JSON.stringify(user)]);
 
-    useEffect(() => {
-        filtersRef.current = filters;
-    }, [filters]);
 
-    const fetchOrganizations = async (currentFilters:any) => {
-        console.log("filters", currentFilters.localities)
+    useEffect(() => {
+        console.log("Organizations", organizations)
+        console.log("hasMore", hasMore)
+    }, [organizations])
+
+    const handleFetch = async (currentFilters:any) => {
         setOrgLoading(true);
-        const locationIds = userDetails?.locations?.map((l: any) => l.id) || null;
-        const data = await getLocalOrganizations(
-            locationIds,
-            currentFilters.userId,
-            currentFilters.localities,
-            currentFilters.page_size,
-            null,
-            null
-        );
+        const data = await fetchOrganizations(currentFilters, userDetails);
         setOrganizations(data);
         setOrgLoading(false);
     };
 
-    const fetchMoreOrganizations = async () => {
+    const handleFetchMore = async (organizations: Organization[], userDetails: any, filters: any, hasMore: boolean) => {
+        console.log("fetching more", filters)
+        console.log("hasMore", hasMore)
+        if (!hasMore) return;
         if (orgLoading) return;
-
         setOrgLoading(true);
-        const lastOrg = organizations[organizations.length - 1];
-        const locationIds = userDetails?.locations?.map((l: any) => l.id) || null;
-        const data = await getLocalOrganizations(
-            locationIds,
-            filtersRef.current.userId,
-            filtersRef.current.localities,
-            filtersRef.current.page_size,
-            lastOrg?.score || null,
-            lastOrg?.id || null
-        );
-        if (data?.length === 0) {
+        const data = await fetchMoreOrganizations(organizations, userDetails, filters);
+        console.log("data", data)
+        if (data && data.length === 0) {
             setHasMore(false);
+            setTimeout(() => {
+                setHasMore(true)
+            }, 1000)
         }
         if (data?.length > 0) {
             setOrganizations((prev) => [...prev, ...data]);
         }
         setOrgLoading(false);
     };
+
+
 
     const handleGenerateCSV = async () => {
         const orgIds = organizations.map((o) => o.id);
@@ -168,7 +160,7 @@ const Feed = () => {
                     filters={filters}
                     toggleFavorites={toggleFavorites}
                     toggleLocality={toggleLocality}
-                    submitQuery={() => fetchOrganizations(filters)}
+                    submitQuery={() => handleFetch(filters)}
                 />
             </div>
             {organizations.map((org, index) => (
@@ -195,7 +187,7 @@ const Feed = () => {
                         filters={filters}
                         toggleFavorites={toggleFavorites}
                         toggleLocality={toggleLocality}
-                        submitQuery={() => fetchOrganizations(filters)}
+                        submitQuery={() => handleFetch(filters)}
                     />
                 </div>
                 {organizations.map((org, index) => (
