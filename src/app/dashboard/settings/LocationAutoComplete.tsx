@@ -1,5 +1,5 @@
 import Input from '@/src/components/input/Input';
-import React from 'react';
+import React, { useEffect } from 'react';
 import usePlacesAutocomplete, { getGeocode, getLatLng, Suggestion, getDetails, DetailsResult } from 'use-places-autocomplete';
 import styles from './LocationAutoComplete.module.css';
 import { LocationAutoCompleteProps } from '@/src/definitions';
@@ -35,15 +35,22 @@ const LocationAutoComplete: React.FC<LocationAutoCompleteProps> = ({ onSelectLoc
         }
     };
 
+    useEffect(() => {
+        console.log('Ready state changed:', ready);
+    }, [ready]);
+
     return (
         <div>
-            <Input
-                label="Add Location"
-                type="text"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                placeholder="Search Cities..."
-            />
+            {ready &&
+                <Input
+                    label="Add Location"
+                    type="text"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    placeholder="Search Cities..."
+                />
+            }
+
             <div className="autocomplete-dropdown-container">
                 {status === 'OK' && data.map((suggestion) => (
                     <div

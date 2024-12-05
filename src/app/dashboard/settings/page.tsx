@@ -8,7 +8,6 @@ import AsyncButton from '@/src/components/async_button/AsyncButton';
 import { addLocation } from '@/src/actions/locations';
 import Location from '@/src/components/location/Location';
 import { DetailsResult, Suggestion } from 'use-places-autocomplete';
-import { saveLocation } from '@/src/actions/locations';
 import { supabase } from '@/src/utils/supabase/client';
 
 const UserAccount = () => {
