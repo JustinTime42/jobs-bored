@@ -1,5 +1,4 @@
 // layout.tsx
-import Script from 'next/script';
 
 export default function DashboardLayout({
   children,
@@ -9,10 +8,6 @@ export default function DashboardLayout({
   return (
     <>
       <section className="flex flex-col items-center" >{children}</section>
-      <Script
-        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_PLACES_KEY}&libraries=places`}
-        strategy="afterInteractive"
-      />
     </>
   );
 }

@@ -9,12 +9,14 @@ import { addLocation } from '@/src/actions/locations';
 import Location from '@/src/components/location/Location';
 import { DetailsResult, Suggestion } from 'use-places-autocomplete';
 import { supabase } from '@/src/utils/supabase/client';
+import useLoadScript from '../../hooks/useLoadScript';
 
 const UserAccount = () => {
     const { user, loading, error, fetchUser } = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
     const [newLocation, setNewLocation] = useState<any>({});
     const router = useRouter();
+    const scriptLoaded = useLoadScript(`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_PLACES_KEY}&libraries=places`);
 
     useEffect(() => {
         console.log('User:', user);
@@ -102,7 +104,9 @@ const UserAccount = () => {
                     <Location key={i} location={location} handleRemoveLocation={handleRemovelocation} />
                 ))}
                 <div style={{marginTop:"16px"}}>
-                    <LocationAutoComplete onSelectLocation={(location) => setNewLocation(location)} />
+                    { !scriptLoaded ? <p>Loading...</p> :
+                        <LocationAutoComplete onSelectLocation={(location) => setNewLocation(location)} />
+                    }
                     <AsyncButton asyncAction={handleAddLocation} label="Add Location" />
                 </div>
             </div>
