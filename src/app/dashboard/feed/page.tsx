@@ -3,12 +3,12 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useUserContext } from "../../context/UserContext";
 import { getUserDetails } from "@/src/actions/user";
 import { useRouter } from 'next/navigation';
-import { Organization } from "@/src/definitions";
+import { Organization, UserDetails } from "@/src/definitions";
 import ExternalLink from "@/src/components/Link/ExternalLink";
 import CompanyCard from "@/src/components/company_card/CompanyCard";
 import styles from './Feed.module.css';
 import CompanyDetails from "@/src/components/company_details/CompanyDetails";
-import Filters from "@/src/components/feed_filters/Filters";
+import Filters, { FiltersState } from "@/src/components/feed_filters/Filters";
 import AsyncButton from "@/src/components/async_button/AsyncButton";
 import { useMediaQuery } from 'react-responsive';
 import { generateCSV } from "@/src/actions/exportCSV";
@@ -19,7 +19,7 @@ import { fetchMoreOrganizations, fetchOrganizations } from "./utils";
 const initialFilters = {
     localities: null as string[] | null,
     userId: null,
-    page_size:20,
+    page_size: 20,
     previous_score: null,
     previous_id: null
 };
@@ -27,7 +27,7 @@ const initialFilters = {
 const Feed = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const observer = useRef<IntersectionObserver | null>(null);
-    const { user, loading: userLoading, error: userError } = useUserContext();
+    const {user, loading: userLoading, error: userError} = useUserContext();
     const [userDetails, setUserDetails] = useState<any>({});
     const [filters, setFilters] = useState(initialFilters);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -36,8 +36,8 @@ const Feed = () => {
     const [hasMore, setHasMore] = useState(true);
     const router = useRouter();
     const isMobile = useMediaQuery({ maxWidth: 1200 });
+    
     const lastOrganizationRef = useCallback((node: HTMLDivElement) => {
-        // console.log("filters:", filters)
         if (orgLoading) return;
         if (observer.current) observer.current.disconnect();
         observer.current = new IntersectionObserver(entries => {
@@ -48,6 +48,28 @@ const Feed = () => {
         });
         if (node) observer.current.observe(node);
     }, [orgLoading, hasMore, userDetails, filters, organizations]);
+
+    const handleFetchMore = async (
+        organizations: Organization[],
+        userDetails: UserDetails,
+        filters: FiltersState,
+        hasMore: boolean
+    ) => {
+        if (!hasMore) return;
+        if (orgLoading) return;
+        setOrgLoading(true);
+        const data = await fetchMoreOrganizations(organizations, userDetails, filters);
+        if (data && data.length === 0) {
+            setHasMore(false);
+            setTimeout(() => {
+                setHasMore(true)
+            }, 1000)
+        }
+        if (data?.length > 0) {
+            setOrganizations((prev) => [...prev, ...data]);
+        }
+        setOrgLoading(false);
+    };
 
     useEffect(() => {
         if (user) {
@@ -72,40 +94,12 @@ const Feed = () => {
         }
     }, [JSON.stringify(user)]);
 
-
-    useEffect(() => {
-        console.log("Organizations", organizations)
-        console.log("hasMore", hasMore)
-    }, [organizations])
-
     const handleFetch = async (currentFilters:any) => {
         setOrgLoading(true);
         const data = await fetchOrganizations(currentFilters, userDetails);
         setOrganizations(data);
         setOrgLoading(false);
     };
-
-    const handleFetchMore = async (organizations: Organization[], userDetails: any, filters: any, hasMore: boolean) => {
-        console.log("fetching more", filters)
-        console.log("hasMore", hasMore)
-        if (!hasMore) return;
-        if (orgLoading) return;
-        setOrgLoading(true);
-        const data = await fetchMoreOrganizations(organizations, userDetails, filters);
-        console.log("data", data)
-        if (data && data.length === 0) {
-            setHasMore(false);
-            setTimeout(() => {
-                setHasMore(true)
-            }, 1000)
-        }
-        if (data?.length > 0) {
-            setOrganizations((prev) => [...prev, ...data]);
-        }
-        setOrgLoading(false);
-    };
-
-
 
     const handleGenerateCSV = async () => {
         const orgIds = organizations.map((o) => o.id);
