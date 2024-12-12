@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { supabase } from '@/src/utils/supabase/client';
 import { handleNewUser } from '@/src/actions/stripe';
 import { getUserDetails } from '@/src/actions/user';
@@ -18,28 +18,33 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
+  const handleNewUserCalled = useRef(false);
 
   const fetchUser = useCallback(async () => {
-    setLoading(true); 
+    setLoading(true);
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error) throw error;
       if (user) {
         console.log('Getting user details...');
-        const profile = await getUserDetails(user.id);
-        if (!profile?.stripe_customer_id) {
+        let profile = await getUserDetails(user.id);
+        if (!profile?.stripe_customer_id && !handleNewUserCalled.current) {
+          console.log('Creating new user...');
+          handleNewUserCalled.current = true; 
           await handleNewUser(user);
+          profile = await getUserDetails(user.id); 
+          handleNewUserCalled.current = false; 
         }
         setUser({ ...user, ...profile });
       } else {
-        setUser(null); 
+        setUser(null);
       }
     } catch (error: any) {
       console.error('Error fetching user:', error);
       setError(error);
       setUser(null);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   }, []);
 
