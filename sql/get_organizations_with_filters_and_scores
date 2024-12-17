@@ -1,0 +1,91 @@
+CREATE OR REPLACE FUNCTION get_organizations_with_filters_and_scores(
+  location_ids UUID[],
+  user_param_id UUID DEFAULT NULL,
+  filter_locality TEXT[] DEFAULT NULL
+)
+RETURNS TABLE (
+  id TEXT,
+  name TEXT,
+  size SMALLINT,
+  website_url TEXT,
+  locality TEXT,
+  region TEXT,
+  country TEXT,
+  linkedin_url TEXT,
+  twitter_url TEXT,
+  facebook_url TEXT,
+  emails TEXT[],
+  unreachable_url BOOLEAN,
+  fetched_people BOOLEAN,
+  logo_url TEXT,
+  score INTEGER
+) AS $$
+BEGIN
+  RETURN QUERY
+  WITH user_locations AS (
+    SELECT l.locality, l.admin_area_level_1, l.admin_area_level_2, l.country
+    FROM locations l
+    WHERE l.id = ANY(location_ids)
+  ),
+  user_favorites AS (
+    SELECT organization_id
+    FROM user_organizations 
+    WHERE user_id = user_param_id
+  )
+  SELECT
+    o.id,
+    o.name,
+    o.size,
+    o.website_url,
+    o.locality,
+    o.region,
+    o.country,
+    o.linkedin_url,        
+    o.twitter_url,
+    o.facebook_url,
+    o.emails,
+    o.unreachable_url,
+    o.fetched_people,
+    o.logo_url,
+    (
+      -- Size Score
+      (CASE 
+          WHEN o.size > 0 AND o.size < 5 
+          THEN 1
+          ELSE 0
+      END) + 
+      -- Location Match Score
+      (CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM user_locations ul
+            WHERE 
+              -- Locality Match
+              (o.locality IS NOT NULL AND ul.locality IS NOT NULL AND o.locality = ul.locality) AND
+              -- Region Match (admin_area_lvl1 or admin_area_lvl2)
+              (
+                (o.region IS NOT NULL AND ul.admin_area_level_1 IS NOT NULL AND o.region = ul.admin_area_level_1) OR
+                (o.region IS NOT NULL AND ul.admin_area_level_2 IS NOT NULL AND o.region = ul.admin_area_level_2)
+              ) AND
+              -- Country Match
+              (o.country IS NOT NULL AND ul.country IS NOT NULL AND o.country = ul.country)
+          )
+          THEN 1
+          ELSE 0
+      END) +
+      -- Website URL Score
+      (CASE
+          WHEN o.website_url IS NOT NULL
+          THEN 1
+          ELSE 0
+      END)
+    ) AS score
+  FROM organizations o
+  LEFT JOIN user_favorites uf ON o.id = uf.organization_id
+  WHERE 
+    o.hires_in && location_ids
+    AND (user_param_id IS NULL OR uf.organization_id IS NOT NULL)  -- Filter for favorites if user_id is provided
+    AND (filter_locality IS NULL OR o.locality ILIKE ANY(filter_locality))  -- Filter for locality (city)
+  ORDER BY score DESC;
+END;
+$$ LANGUAGE plpgsql;

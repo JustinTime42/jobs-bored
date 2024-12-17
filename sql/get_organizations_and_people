@@ -1,0 +1,76 @@
+CREATE OR REPLACE FUNCTION get_organizations_and_people(org_ids_text text[])
+RETURNS TABLE (
+  name text,
+  website_url text,
+  linkedin_url text,
+  email text
+)
+LANGUAGE plpgsql
+STABLE
+AS $$
+BEGIN
+  RETURN QUERY
+  WITH input_orgs AS (
+    SELECT
+      org_id::uuid AS org_id,
+      ordinality
+    FROM
+      unnest(org_ids_text) WITH ORDINALITY AS t(org_id, ordinality)
+  ),
+  orgs AS (
+    SELECT
+      o.id AS org_id,
+      o.name AS org_name,
+      o.website_url AS org_website_url,
+      o.linkedin_url AS org_linkedin_url,
+      o.emails AS org_emails,
+      io.ordinality
+    FROM
+      organizations o
+      JOIN input_orgs io ON o.id = io.org_id
+  ),
+  org_emails AS (
+    SELECT
+      o.org_id,
+      o.org_name AS name,
+      o.org_website_url AS website_url,
+      o.org_linkedin_url AS linkedin_url,
+      e.email,
+      o.ordinality,
+      0 AS sort_order
+    FROM
+      orgs o
+      CROSS JOIN LATERAL unnest(o.org_emails) AS e(email)
+  ),
+  org_people AS (
+    SELECT
+      o.org_id,
+      p.name AS name,
+      NULL::text AS website_url,
+      p.linkedin_url AS linkedin_url,
+      p.email AS email,
+      o.ordinality,
+      1 AS sort_order
+    FROM
+      orgs o
+      JOIN people p ON p.organization_id = o.org_id
+  ),
+  combined AS (
+    SELECT * FROM org_emails
+    UNION ALL
+    SELECT * FROM org_people
+  )
+  SELECT
+    name,
+    website_url,
+    linkedin_url,
+    email
+  FROM
+    combined
+  ORDER BY
+    ordinality,
+    org_id,
+    sort_order,
+    name;
+END;
+$$;

@@ -47,7 +47,8 @@ export const signInWithGitHub = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: process.env.NEXT_PUBLIC_REDIRECT_URL,
+      redirectTo: `${process.env.NEXT_PUBLIC_REDIRECT_URL}dashboard`,
+      skipBrowserRedirect: false,
     },
   });
   console.log(data)

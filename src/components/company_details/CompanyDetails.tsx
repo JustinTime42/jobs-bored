@@ -77,13 +77,13 @@ const CompanyDetails = ( { company, userId, isActive  }: { company: Organization
                     {company.twitter_url && <ExternalLink href={company.twitter_url}><Twitter /></ExternalLink>}
                     {company.facebook_url && <ExternalLink href={company.facebook_url}><Facebook /></ExternalLink>}
                     <IconButton
-                    onClick={handleToggleFavorites}
-                    title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                    className={styles.favorite_button}
-                >
-                    {isFavorite ? <Favorite  /> : <FavoriteBorder />}
-                </IconButton>                    
-                    </div>
+                        onClick={handleToggleFavorites}
+                        title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                        className={styles.favorite_button}
+                    >
+                        {isFavorite ? <Favorite  /> : <FavoriteBorder />}
+                    </IconButton>                    
+                </div>
                 </div>
             }
             {
@@ -102,14 +102,16 @@ const CompanyDetails = ( { company, userId, isActive  }: { company: Organization
 
             <h4>Contacts:</h4>
             <div>      
-                {company.emails && <div className={styles.emails}>{company.emails.map(email => (
-                    <div key={email} className={styles.email}>
-                        <p>{email}</p>
-                        <CopyText text={email} />
+                {company.emails && 
+                    <div className={styles.emails}>
+                        {company.emails.map(email => (
+                            <div key={email} className={styles.email}>
+                                <p>{email}</p>
+                                <CopyText text={email} />
+                            </div>
+                        ))}
                     </div>
-                )
-                )}
-            </div>}     
+                }
                 {
                     isLoading && <p>Loading...</p>
                 }

@@ -13,11 +13,17 @@ export default function AuthButton() {
   const handleLogin = async () => {
     console.log("logging in");
     try {
-      await signInWithGitHub();
+      await signInWithGitHub();  
+      await fetchUser();
+      console.log('user', user)
     } catch (error) {
       console.error("Error logging in:", error);
     }
   };
+
+  useEffect(() => {
+    console.log('user', user)
+  }, [user])
 
   const handleLogout = async () => {
     console.log("logging out");

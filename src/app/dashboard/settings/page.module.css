@@ -23,6 +23,12 @@
   margin: 8px 0;
 }
 
+.begin {
+  background-color: #ff4136;
+  padding: 10px;
+  color: white;
+}
+
 .buttons {
   display: flex;
   justify-content: space-between;

@@ -73,6 +73,12 @@ a:hover {
   --foreground: 200 50% 3%;
 }
 
+body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
 /* @media (prefers-color-scheme: dark) {
   :root {
     --background: 200 50% 3%;

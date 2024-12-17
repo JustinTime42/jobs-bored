@@ -48,7 +48,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Listen to auth state changes
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
@@ -82,7 +81,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         .subscribe();
 
       return () => {
-        supabase.removeChannel(channel); // Clean up channel on unmount
+        supabase.removeChannel(channel);
       };
     }
   }, [user]);

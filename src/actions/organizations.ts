@@ -20,13 +20,18 @@ export const saveOrganizations = async (organizations: any[]) => {
     }
 };
 
-export const getLocalOrganizations = async (locations: string[], userId: string | null, localities: string[] | null) => {
+export const getLocalOrganizations = async (locations: string[] | null, userId: string | null, localities: string[] | null, page_size: number, previous_score: number | null, previous_id: string | null) => {
     console.log("Getting local organizations", locations)
+    console.log("Getting local organizations", localities)
+    
     const { data, error } = await supabaseAdmin
     .rpc('get_organizations_with_filters_and_scores', {
         location_ids: locations,
         user_param_id: userId,
-        filter_locality: localities
+        filter_locality: localities?.length === 0 ? null : localities,
+        page_size: page_size,
+        previous_score: previous_score,
+        previous_id: previous_id
       });   
     if (error) {
         console.error('Error fetching organizations:', error);

@@ -12,21 +12,7 @@ import { useMediaQuery } from 'react-responsive'
 import { Facebook, FavoriteBorder, Twitter } from "@mui/icons-material";
 
 export type CompanyCardProps = {
-    company: {
-        size: number;
-        country: string;
-        id: string;
-        locality: string;
-        name: string;
-        region: string;
-        score: number;
-        website_url: string;
-        linkedin_url: string;
-        twitter_url: string;
-        facebook_url: string;
-        emails: string[];
-        logo_url: string;
-    },
+    company: Organization,
     className?: string;
 };
 
@@ -68,7 +54,7 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, className }) => {
                     <p style={{marginRight:"1em"}}>{locality && `${capitolize(locality)},`} {capitolize(region)}</p>
                     <p><PeopleIcon /> {sizeMap[size]}</p>
                     <ExternalLink href={linkedin_url}><LinkedInIcon/></ExternalLink>
-                    <ExternalLink href={company.website_url}><LinkIcon/></ExternalLink>
+                    <ExternalLink href={company.website_url || ""}><LinkIcon/></ExternalLink>
                     {twitter_url && <ExternalLink href={twitter_url}><Twitter /></ExternalLink>}
                     {facebook_url && <ExternalLink href={facebook_url}><Facebook /></ExternalLink>}
                 </div>
@@ -88,7 +74,7 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, className }) => {
                     <p><PeopleIcon style={{marginBottom:"8px"}}/> {sizeMap[size]}</p>
                     <div>
                         <ExternalLink href={linkedin_url}><LinkedInIcon/></ExternalLink>
-                        <ExternalLink href={company.website_url}><LinkIcon/></ExternalLink>
+                        <ExternalLink href={company.website_url || ""}><LinkIcon/></ExternalLink>
                     </div>
     
     

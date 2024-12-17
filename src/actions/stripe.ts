@@ -75,6 +75,7 @@ export const handleNewSubscription = async (stripeCustomerId: string) => {
 }
 
 export const handlePortalSession = async (stripeCustomerId: string) => {
+    console.log('stripeCustomerId', stripeCustomerId)
 	try {
 		const session = await stripe.billingPortal.sessions.create({
 			customer: stripeCustomerId,

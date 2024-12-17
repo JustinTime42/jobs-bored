@@ -45,6 +45,11 @@ export interface EmploymentHistory {
     country: string;
     postal_code: string;
     fetched_people?: boolean;
+    size: number;
+    locality: string;
+    region: string;
+    score: number;
+
   }
   
   export interface Account {
@@ -133,6 +138,29 @@ export interface ApolloResponse {
     contacts: any[];
     people: Person[];
   }
+
+export type UserDetails = {
+    id: string;
+    created_at: string;
+    name: string;
+    email: string;
+    avatar_url: string;
+    user_name: string;
+    stripe_customer_id: string;
+    stripe_subscription_id: string;
+    subscription_status: string;
+    trial_ends_at: string;
+    locations: {
+        id: string;
+        created_at: string;
+        formatted_address: string;
+        locality: string;
+        admin_area_level_1: string;
+        admin_area_level_2: string;
+        country: string;
+        page: number;
+    }[];
+}
   
   export interface LocationAutoCompleteProps {
     onSelectLocation: (location: {

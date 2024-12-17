@@ -7,8 +7,8 @@ import AsyncButton from '@/src/components/async_button/AsyncButton';
 import { addLocation } from '@/src/actions/locations';
 import Location from '@/src/components/location/Location';
 import { DetailsResult, Suggestion } from 'use-places-autocomplete';
-import { saveLocation } from '@/src/actions/locations';
 import { supabase } from '@/src/utils/supabase/client';
+import useLoadScript from '../../hooks/useLoadScript';
 import { loadStripe } from '@stripe/stripe-js';
 import styles from './page.module.css';
 import Button from '@/src/components/button/Button';
@@ -19,9 +19,9 @@ const UserAccount = () => {
     const { user, loading, error, fetchUser } = useUserContext();
     const [newLocation, setNewLocation] = useState<any>({});
     const router = useRouter();
-
-    useEffect(() => {   
-        console.log('User:', user);
+    const scriptLoaded = useLoadScript(`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_PLACES_KEY}&libraries=places`);
+    const [loadingLocations, setLoadingLocations] = useState(false);
+    useEffect(() => {
         if (user) {
             const channel = supabase
             .channel('public:users_locations')
@@ -53,11 +53,6 @@ const UserAccount = () => {
         }
         try {
             await addLocation(newLocation, user.id);
-            console.log(newLocation)
-            // setUserDetails({
-            //     ...userDetails,
-            //     locations: [...userDetails.locations, newLocation],
-            // });
             setNewLocation({} as Suggestion);
         } catch (error) {
             throw error
@@ -69,11 +64,6 @@ const UserAccount = () => {
             .delete()
             .eq('user_id', user.id)
             .eq('location_id', location.id);
-        // console.log(userDetails.locations)
-        // setUserDetails({
-        //     ...userDetails,
-        //     locations: userDetails.locations.filter((l: any) => l.id !== location.id),
-        // });
     };   
 
     const handleSubscribe = async () => {
@@ -103,6 +93,7 @@ const UserAccount = () => {
     
       const handleManageSubscription = async () => {    
         const url = await handlePortalSession(user.stripe_customer_id);
+        console.log('url', url)
         if (url) {
             window.location.href = url; 
         }        
@@ -121,33 +112,39 @@ const UserAccount = () => {
 
     return (
         <div className={styles.container}>
-        <h1 className={styles.title}>Account Management</h1>
+            <h1 className={styles.title}>Account Management</h1>
 
-        <div className={styles.info}>
-            <p><strong>Username:</strong> {user.user_name || 'N/A'}</p>
-            <p><strong>Email:</strong> {user.email}</p>
-            <p><strong>Subscription Status:</strong> {getSubStatus()}</p>
-        </div>
-
-        <div className={styles.buttons}>
-            {user.subscription_status !== 'active' && (
-            <Button className={styles.button} onClick={handleSubscribe} text="Subscribe Now"/>            
-            )}
-            {user.subscription_status === 'active' && (
-                <Button className={styles.button} onClick={handleManageSubscription} text="Manage Subscription" />
-            )}
-        </div>
-
-        <div className={styles.locations}>
-            <p style={{margin:"4px"}}> Locations: </p>
-            {user?.locations && user.locations.map((location: string, i: number) => (
-                <Location key={i} location={location} handleRemoveLocation={handleRemovelocation} />
-            ))}
-            <div style={{marginTop:"16px"}}>
-                <LocationAutoComplete onSelectLocation={(location) => setNewLocation(location)} />
-                <AsyncButton asyncAction={handleAddLocation} label="Add Location" />
+            <div className={styles.info}>
+                <p><strong>Username:</strong> {user.user_name || 'N/A'}</p>
+                <p><strong>Email:</strong> {user.email}</p>
+                <p><strong>Subscription Status:</strong> {getSubStatus()}</p>
+                {
+                    user.subscription_status === 'trial' && <p><strong>Trial Ends:</strong> {new Date(user.trial_ends_at).toLocaleDateString()}</p>
+                }
             </div>
-        </div>
+
+            <div className={styles.buttons}>
+                {user.subscription_status !== 'active' && (
+                <Button className={styles.button} onClick={handleSubscribe} text="Subscribe Now"/>            
+                )}
+                {user.subscription_status === 'active' && (
+                    <Button className={styles.button} onClick={handleManageSubscription} text="Manage Subscription" />
+                )}
+            </div>
+
+            <div className={styles.locations}>
+                <p style={{margin:"4px"}}> Locations: </p>
+                {user?.locations?.length === 0 && <div className={styles.begin}>To begin, enter your city below.</div>}
+                {user?.locations && user.locations.map((location: string, i: number) => (
+                    <Location key={i} location={location} handleRemoveLocation={handleRemovelocation} />
+                ))}
+                <div style={{marginTop:"16px"}}>
+                        { !scriptLoaded ? <p>Loading...</p> :
+                        <LocationAutoComplete onSelectLocation={(location) => setNewLocation(location)} />
+                        }
+                    <AsyncButton asyncAction={handleAddLocation} label="Add Location" />
+                </div>
+            </div>
         </div>
 
     );

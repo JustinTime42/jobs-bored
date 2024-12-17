@@ -1,6 +1,7 @@
 .container {
   max-width: 1200px;
   margin-left: 1em;
+  width: 100%;
 }
 .company {
   text-align: center;

@@ -1,9 +1,8 @@
 'use client'
 import React, { useEffect } from 'react';
-import NavPanel from '@/src/components/NavPanel/NavPanel';
-import styles from './layout.module.css';
-import { useUserContext } from '../context/UserContext';
+import { useUserContext } from '../../context/UserContext';
 import { useRouter } from 'next/navigation';
+
 interface Props {
   children: React.ReactNode;
 }
@@ -18,23 +17,16 @@ export default function Layout({ children }: Props) {
       router.push('/');
       return;
     }
-    const pathname = window.location.pathname;
-    
-    if (pathname === '/dashboard') {
-      if ( user.locations?.length === 0 || !user.locations) {
-        router.push('/dashboard/settings');
-      } else {
-        router.push('/dashboard/feed');
-      }
+
+    if (user.locations.length === 0 || !user.locations) {
+      router.push('/dashboard/settings');
       return;
     }
   }, [user, loading]);
 
-
-
   return (
-    <NavPanel>
+    <>
       {children}
-    </NavPanel>
+    </>
   );
 }

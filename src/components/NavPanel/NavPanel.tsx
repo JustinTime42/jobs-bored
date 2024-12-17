@@ -84,8 +84,9 @@ export default function NavPanel({ children }: Props) {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
+    <div className={styles.container}>
+      <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
       <MuiAppBar
         position="fixed"
         sx={{
@@ -147,8 +148,9 @@ export default function NavPanel({ children }: Props) {
           }}
           sx={{
             display: { xs: 'block', lg: 'none' }, // Only display on mobile
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth }, 
           }}
+
         >
           {drawer}
         </Drawer>
@@ -171,11 +173,13 @@ export default function NavPanel({ children }: Props) {
           flexGrow: 1,
           p: 3,
           width: { md: `calc(100% - ${drawerWidth}px)` },
+          marginTop: "100px",
         }}
       >
-        <Toolbar />{/*  Spacer to prevent content from being hidden under AppBar */}
         {children}
       </Box>
-    </Box>
+      </Box>
+    </div>
   );
 }
+

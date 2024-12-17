@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Checkbox from '@mui/material/Checkbox';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -9,8 +9,11 @@ import AsyncButton from "../async_button/AsyncButton";
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 
 export type FiltersState = {
-    userId: string;
-    localities: string[];
+    userId: string | null;
+    localities: string[] | null;
+    page_size: number;
+    previous_score: number | null;
+    previous_id: string | null;
 };
 
 type FiltersProps = {
@@ -22,7 +25,25 @@ type FiltersProps = {
 };
 
 const Filters = ({userLocations, filters, toggleFavorites, toggleLocality, submitQuery}: FiltersProps) => {
-    console.log(userLocations)
+    const [includeRemote, setIncludeRemote] = useState(false);
+    const toggleRemote = () => {
+        if (includeRemote) {
+            userLocations.forEach(location => {
+                if (!filters.localities?.includes(location.locality)) {
+                    toggleLocality(location.locality)
+                }
+            })   
+        } else {
+            userLocations.forEach(location => {
+                if (filters.localities?.includes(location.locality)) {
+                    toggleLocality(location.locality)
+                }
+            }) 
+        }
+ 
+        setIncludeRemote(!includeRemote)
+
+    }
     return (
         <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -32,9 +53,9 @@ const Filters = ({userLocations, filters, toggleFavorites, toggleLocality, submi
                 <FormGroup>
                     <FormControlLabel
                         control={<Checkbox checked={!!filters.userId} onChange={toggleFavorites} />}
-                        label="Favorites"
+                        label="Favorites Only"
                     />
-                    {userLocations?.map((location) => (
+                    {/* {userLocations?.map((location) => (
                         <FormControlLabel
                             key={location.locality}
                             control={
@@ -45,7 +66,13 @@ const Filters = ({userLocations, filters, toggleFavorites, toggleLocality, submi
                             }
                             label={location.locality}
                         />
-                    ))}
+                    ))} */}
+                    <FormControlLabel
+                        control={<Checkbox checked={!!includeRemote} onChange={() => toggleRemote()} />}
+                        label="Include Remote"
+                    />
+
+                
                 </FormGroup>
                 <AsyncButton
                     asyncAction={submitQuery}
