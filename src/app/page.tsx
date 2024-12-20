@@ -42,7 +42,7 @@ export default function Index() {
       <section className={styles.mentorship}>
         <h2><School /> Maximize Your Potential with Expert Guidance</h2>
         <p>We've partnered with         
-            <a href="crushingdigital.com" className={styles.mentorLink}>
+            <a href="https://crushing.digital/" className={styles.mentorLink}>
                 Crushing Digital
             </a> 
             to provide you with the skills needed to truly stand out. Learn how to showcase your value effectively with practical tips directly tied to our system.</p>
