@@ -14,7 +14,7 @@ export default function AuthButton() {
     console.log("logging in");
     try {
       await signInWithGitHub();  
-      await fetchUser();
+      // await fetchUser();
       console.log('user', user)
     } catch (error) {
       console.error("Error logging in:", error);

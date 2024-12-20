@@ -3,14 +3,15 @@ import { Tooltip, IconButton } from '@mui/material';
 import { Email as EmailIcon, MailOutline as MailOutlineIcon } from '@mui/icons-material';
 import { getPersonEmail } from '@/src/actions/apolloPeople';
 import styles from './EmailDownloadLink.module.css';
-import { supabase } from '@/src/utils/supabase/client';
 import { useUserContext } from '@/src/app/context/UserContext';
+import { createClient } from '@/src/utils/supabase/client';
 
 const EmailDownloadLink = ({ email, id }: { email : string | null, id: string}) => {
     const [currentEmail, setCurrentEmail] = useState(email);
     const [copied, setCopied] = useState(false);
     const { user, loading } = useUserContext();
     const isPaid = user?.subscription_status === 'active';
+    const supabase = createClient();
 
     const getEmail = async (id: string) => {
         return await getPersonEmail(id)

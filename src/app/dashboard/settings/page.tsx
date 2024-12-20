@@ -7,20 +7,20 @@ import AsyncButton from '@/src/components/async_button/AsyncButton';
 import { addLocation } from '@/src/actions/locations';
 import Location from '@/src/components/location/Location';
 import { DetailsResult, Suggestion } from 'use-places-autocomplete';
-import { supabase } from '@/src/utils/supabase/client';
 import useLoadScript from '../../hooks/useLoadScript';
 import { loadStripe } from '@stripe/stripe-js';
 import styles from './page.module.css';
 import Button from '@/src/components/button/Button';
 import { handleNewSubscription, handlePortalSession } from '@/src/actions/stripe';
+import { createClient } from '@/src/utils/supabase/client';
 
 
 const UserAccount = () => {
-    const { user, loading, error, fetchUser } = useUserContext();
+    const { user, loading, error, isInitialized, fetchUser } = useUserContext();
     const [newLocation, setNewLocation] = useState<any>({});
     const router = useRouter();
     const scriptLoaded = useLoadScript(`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_PLACES_KEY}&libraries=places`);
-    const [loadingLocations, setLoadingLocations] = useState(false);
+    const supabase = createClient();
     useEffect(() => {
         if (user) {
             const channel = supabase
@@ -100,7 +100,7 @@ const UserAccount = () => {
       };
 
     if (loading) {
-        return <p style={{marginTop: "1em"}}>Loading...</p>;
+        return <p style={{marginTop: "2em"}}>Loading...</p>;
     }
     if (error) {
         return <p>Error: {error.message}</p>;
@@ -115,7 +115,7 @@ const UserAccount = () => {
             <h1 className={styles.title}>Account Management</h1>
 
             <div className={styles.info}>
-                <p><strong>Username:</strong> {user.user_name || 'N/A'}</p>
+                <p><strong>Username:</strong> {user.user_metadata.user_name || 'N/A'}</p>
                 <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>Subscription Status:</strong> {getSubStatus()}</p>
                 {

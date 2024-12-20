@@ -26,14 +26,11 @@ importers:
       '@stripe/stripe-js':
         specifier: ^4.10.0
         version: 4.10.0
-      '@supabase/auth-helpers-nextjs':
-        specifier: ^0.10.0
-        version: 0.10.0(@supabase/supabase-js@2.45.3)
       '@supabase/ssr':
-        specifier: ^0.4.0
+        specifier: ^0.4.1
         version: 0.4.1(@supabase/supabase-js@2.45.3)
       '@supabase/supabase-js':
-        specifier: ^2.45.2
+        specifier: ^2.45.3
         version: 2.45.3
       autoprefixer:
         specifier: 10.4.17
@@ -1879,25 +1876,6 @@ packages:
   /@stripe/stripe-js@4.10.0:
     resolution: {integrity: sha512-KrMOL+sH69htCIXCaZ4JluJ35bchuCCznyPyrbN8JXSGQfwBI1SuIEMZNwvy8L8ykj29t6sa5BAAiL7fNoLZ8A==}
     engines: {node: '>=12.16'}
-    dev: false
-
-  /@supabase/auth-helpers-nextjs@0.10.0(@supabase/supabase-js@2.45.3):
-    resolution: {integrity: sha512-2dfOGsM4yZt0oS4TPiE7bD4vf7EVz7NRz/IJrV6vLg0GP7sMUx8wndv2euLGq4BjN9lUCpu6DG/uCC8j+ylwPg==}
-    peerDependencies:
-      '@supabase/supabase-js': ^2.39.8
-    dependencies:
-      '@supabase/auth-helpers-shared': 0.7.0(@supabase/supabase-js@2.45.3)
-      '@supabase/supabase-js': 2.45.3
-      set-cookie-parser: 2.7.0
-    dev: false
-
-  /@supabase/auth-helpers-shared@0.7.0(@supabase/supabase-js@2.45.3):
-    resolution: {integrity: sha512-FBFf2ei2R7QC+B/5wWkthMha8Ca2bWHAndN+syfuEUUfufv4mLcAgBCcgNg5nJR8L0gZfyuaxgubtOc9aW3Cpg==}
-    peerDependencies:
-      '@supabase/supabase-js': ^2.39.8
-    dependencies:
-      '@supabase/supabase-js': 2.45.3
-      jose: 4.15.9
     dev: false
 
   /@supabase/auth-js@2.65.0:
@@ -6235,10 +6213,6 @@ packages:
       send: 0.19.0
     transitivePeerDependencies:
       - supports-color
-
-  /set-cookie-parser@2.7.0:
-    resolution: {integrity: sha512-lXLOiqpkUumhRdFF3k1osNXCy9akgx/dyPZ5p8qAg9seJzXr5ZrlqZuWIMuY6ejOsVLE6flJ5/h3lsn57fQ/PQ==}
-    dev: false
 
   /set-function-length@1.2.2:
     resolution: {integrity: sha512-pgRc4hJ4/sNjWCSS9AmnS40x3bNMDTknHgL5UaMBTMyJnU90EgWh1Rz+MC9eFu4BuN/UwZjKQuY/1v3rM7HMfg==}

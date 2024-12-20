@@ -3,9 +3,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
 
-  if (request.nextUrl.pathname.includes('/auth/callback')) {
-    return NextResponse.next();
-  }
+  // if (request.nextUrl.pathname.includes('/auth/callback')) {
+  //   return NextResponse.next();
+  // }
 
   let supabaseResponse = NextResponse.next({
     request,
