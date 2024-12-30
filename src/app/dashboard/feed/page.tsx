@@ -47,7 +47,7 @@ const Feed = () => {
 
     useEffect(() => {
         if (user) {
-            handleFetch(filters);
+            handleFetch({...filters, localities: user.locations.map((l: any) => l.locality)});
         }
     }, [JSON.stringify(user)]);
 
@@ -64,8 +64,7 @@ const Feed = () => {
     };
 
     const handleFetchMore = async (organizations: Organization[], user: any, filters: any, hasMore: boolean) => {
-        console.log("fetching more", filters)
-        console.log("hasMore", hasMore)
+
         if (!hasMore) return;
         if (orgLoading) return;
         setOrgLoading(true);
@@ -75,7 +74,7 @@ const Feed = () => {
             setHasMore(false);
             setTimeout(() => {
                 setHasMore(true)
-            }, 1000)
+            }, 2000)
         }
         if (data?.length > 0) {
             setOrganizations((prev) => [...prev, ...data]);
@@ -159,7 +158,8 @@ const Feed = () => {
             </div>
         </div>
     ) : (
-        <div className={`${styles.container} flex-none basis-[400px]`}>
+        <div className={styles.container}>
+            <div style={{display: 'flex', flexDirection: 'row', gap: '1em', width: '100%', justifyContent: 'center'}}>
             <div className={styles.feed} ref={containerRef}>
                 <div className={styles.feedMenu}>
                     <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
@@ -185,8 +185,9 @@ const Feed = () => {
                     <CompanyDetails company={activeOrganization} userId={user.id} isActive />
                 )}
             </div>
-            <div className={styles.loadMore}>
+            {/* <div className={styles.loadMore}>
                 {orgLoading && <p>Loading more...</p>}
+            </div> */}
             </div>
         </div>
     );

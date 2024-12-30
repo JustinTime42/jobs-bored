@@ -174,6 +174,8 @@ export default function NavPanel({ children }: Props) {
           p: 3,
           width: { md: `calc(100% - ${drawerWidth}px)` },
           marginTop: "100px",
+          display: "flex",
+          justifyContent: "center",
         }}
       >
         {children}
