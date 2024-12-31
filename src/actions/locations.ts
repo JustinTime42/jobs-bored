@@ -6,7 +6,10 @@ import { supabaseAdmin } from "../utils/supabase/admin";
 
 export const addLocation = async (location: google.maps.places.PlaceResult, userId: string) => {
     try{
-        const addLocation = httpsCallable(functions, 'addLocation');        
+        const addLocation = httpsCallable(functions, 'addLocation');  
+        
+        console.log("location", location)
+        console.log("userId", userId)
         addLocation({location, userId});
         return location;   
     }
