@@ -75,8 +75,8 @@ export const getPeopleLabsData = async (websiteUrls: string[]) => {
 
 export const addLocation = onCall(async (request: any) => {
     const {location, userId} = request.data;
-    console.log("Location:", location);
-    console.log("user:", userId);
+    console.log("Location: ", location);
+    console.log("user: ", userId);
     try {
         const supabaseAdmin = createAdminClient();
         let newLocation = {} as any;
