@@ -11,19 +11,26 @@ export default function AuthButton() {
   const router = useRouter();
 
   const handleLogin = async () => {
+    console.log("logging in");
     try {
-      await signInWithGitHub();
+      await signInWithGitHub();  
+      // await fetchUser();
+      console.log('user', user)
     } catch (error) {
       console.error("Error logging in:", error);
     }
   };
+
+  useEffect(() => {
+    console.log('user', user)
+  }, [user])
 
   const handleLogout = async () => {
     console.log("logging out");
     try {
       await signOutUser();
       await fetchUser();
-      router.push("/"); // Redirect to the home page after logout
+      router.push("/"); 
     } catch (error) {
       console.error("Error logging out:", error);
     }

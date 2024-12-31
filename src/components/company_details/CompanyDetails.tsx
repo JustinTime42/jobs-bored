@@ -13,9 +13,9 @@ import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import LinkIcon from '@mui/icons-material/Link';
 import PersonInfo from "../person_info/PersonInfo";
 import CopyText from "../copy_text/CopyText";
-import { supabase } from "@/src/utils/supabase/client";
 import { useMediaQuery } from 'react-responsive'
 import { IconButton } from "@mui/material";
+import { createClient } from "@/src/utils/supabase/client";
 
 const CompanyDetails = ( { company, userId, isActive  }: { company: Organization, userId: string, isActive: boolean }) => {
     const { user, loading: userLoading, error: userError, fetchUser } = useUserContext();
@@ -25,6 +25,7 @@ const CompanyDetails = ( { company, userId, isActive  }: { company: Organization
     const [isFavorite, setIsFavorite] = useState<boolean>(false);
     const [ hideMoreButton, setHideMoreButton ] = useState<boolean>(companyDetails?.fetched_people || false);
     const isMobile = useMediaQuery({ maxWidth: 1200 });
+    const supabase = createClient();
 
     useEffect(() => {
         if (isActive){
@@ -77,13 +78,13 @@ const CompanyDetails = ( { company, userId, isActive  }: { company: Organization
                     {company.twitter_url && <ExternalLink href={company.twitter_url}><Twitter /></ExternalLink>}
                     {company.facebook_url && <ExternalLink href={company.facebook_url}><Facebook /></ExternalLink>}
                     <IconButton
-                    onClick={handleToggleFavorites}
-                    title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                    className={styles.favorite_button}
-                >
-                    {isFavorite ? <Favorite  /> : <FavoriteBorder />}
-                </IconButton>                    
-                    </div>
+                        onClick={handleToggleFavorites}
+                        title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                        className={styles.favorite_button}
+                    >
+                        {isFavorite ? <Favorite  /> : <FavoriteBorder />}
+                    </IconButton>                    
+                </div>
                 </div>
             }
             {
@@ -102,14 +103,16 @@ const CompanyDetails = ( { company, userId, isActive  }: { company: Organization
 
             <h4>Contacts:</h4>
             <div>      
-                {company.emails && <div className={styles.emails}>{company.emails.map(email => (
-                    <div key={email} className={styles.email}>
-                        <p>{email}</p>
-                        <CopyText text={email} />
+                {company.emails && 
+                    <div className={styles.emails}>
+                        {company.emails.map(email => (
+                            <div key={email} className={styles.email}>
+                                <p>{email}</p>
+                                <CopyText text={email} />
+                            </div>
+                        ))}
                     </div>
-                )
-                )}
-            </div>}     
+                }
                 {
                     isLoading && <p>Loading...</p>
                 }

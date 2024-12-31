@@ -1,44 +1,70 @@
 'use server'
-import { supabaseAdmin } from "../utils/supabase/admin";
-import { supabase } from "../utils/supabase/client";
+import { Location, User } from "../definitions";
+import { createClient } from "../utils/supabase/server"
+import Stripe from 'stripe';
 
-export const getUserDetails = async (uid: string) => {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
-    const { data: userData } = await supabaseAdmin
-        .from('users')
-        .select('*')
-        .eq('id', uid)
-        .single();
+type Locations = {
+    locations: Location[];
+};
+export const getUserDetails = async (uid: string, email?: string, name?: string) => {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+    .from('users')
+    .select(`
+        *,
+        users_locations (
+            locations(*)
+        )
+    `)
+    .eq('id', uid)
+    .single();
 
-    if (!userData) {
-        throw new Error('User not found');
+    if (error) {
+        if (error.code === 'PGRST116') {
+            // Profile not found, create new user
+            return await createNewUser(supabase, uid, email, name);
+        }
+        throw new Error('Failed to fetch user data: ' + error.message);
     }
-    try {
-        const {data, error} = await supabaseAdmin
-            .from('users_locations')
-            .select('locations(*)')
-            .eq('user_id', uid);
-        if (error) throw error;
-        const locations = data.map((l: any) => l.locations);
-        console.log("locations", locations)
-        console.log("data", data)
-        return { ...userData, locations: locations};
-    } catch (error) {
-        console.error('Error fetching locations:', error);
-    }
+
+    const userData = {
+        ...data,
+        locations: data.users_locations?.map((loc: any) => loc.locations) || [],
+    };
+
+    return userData as User;
 };
 
-export const createUserDetails = async (user: any) => {
-    const { data, error } = await supabaseAdmin
-        .from("users")
-        .insert(user)
-        .single();
-    if (error) throw error;
-    return data;
+async function createNewUser(supabase: any, uid: string, email?: string, name?: string) {
+
+    const customer = await stripe.customers.create({
+        email: email!,
+        name: name || undefined,
+    });
+
+
+    const { data, error } = await supabase.from('users').insert({
+        id: uid,
+        email: email,
+        name: name,
+        stripe_customer_id: customer.id,
+        trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        subscription_status: 'trial',
+    }).select().single();
+
+    if (error) {
+        throw new Error('Failed to create new user: ' + error.message);
+    }
+
+    return data as User;
 }
 
+
 export const updateUserDetails = async (user: any) => {
-    const { data, error } = await supabaseAdmin
+    const supabase = await createClient();
+    const { data, error } = await supabase
         .from("users")
         .update(user)
         .eq("id", user.id)

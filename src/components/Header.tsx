@@ -6,7 +6,7 @@ import { useUserContext } from "@/src/app/context/UserContext";
 import Image from "next/image";
 
 export default function Header() {
-  const { user, loading, error, fetchUser } = useUserContext();
+  const { user } = useUserContext();
 
   return (
       <nav className="w-full flex justify-center border-b border-b-foreground/10">

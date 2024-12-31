@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useUserContext } from "../../context/UserContext";
-import { getUserDetails } from "@/src/actions/user";
 import { useRouter } from 'next/navigation';
 import { Organization } from "@/src/definitions";
 import ExternalLink from "@/src/components/Link/ExternalLink";
@@ -12,7 +11,6 @@ import Filters from "@/src/components/feed_filters/Filters";
 import AsyncButton from "@/src/components/async_button/AsyncButton";
 import { useMediaQuery } from 'react-responsive';
 import { generateCSV } from "@/src/actions/exportCSV";
-import { getLocalOrganizations } from "@/src/actions/organizations";
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import { fetchMoreOrganizations, fetchOrganizations } from "./utils";
 
@@ -28,7 +26,6 @@ const Feed = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const observer = useRef<IntersectionObserver | null>(null);
     const { user, loading: userLoading, error: userError } = useUserContext();
-    const [userDetails, setUserDetails] = useState<any>({});
     const [filters, setFilters] = useState(initialFilters);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [activeOrganization, setActiveOrganization] = useState<Organization | null>(null);
@@ -37,67 +34,47 @@ const Feed = () => {
     const router = useRouter();
     const isMobile = useMediaQuery({ maxWidth: 1200 });
     const lastOrganizationRef = useCallback((node: HTMLDivElement) => {
-        // console.log("filters:", filters)
         if (orgLoading) return;
         if (observer.current) observer.current.disconnect();
         observer.current = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting) {
-                handleFetchMore(organizations, userDetails, filters, hasMore);
+                handleFetchMore(organizations, user, filters, hasMore);
             }
             if (node) observer.current?.observe(node);
         });
         if (node) observer.current.observe(node);
-    }, [orgLoading, hasMore, userDetails, filters, organizations]);
+    }, [orgLoading, hasMore, user, filters, organizations]);
 
     useEffect(() => {
         if (user) {
-            getUserDetails(user.id).then(async(data) => {
-                setUserDetails(data);
-                console.log(data)
-                const updatedFilters = {
-                    ...filters,
-                    localities: data.locations.map((l: any) => l.locality),
-                };
-                setFilters(updatedFilters)
-                const orgs = await getLocalOrganizations(
-                    data.locations.map((l: any) => l.id),
-                    null,
-                    updatedFilters.localities,
-                    updatedFilters.page_size,
-                    null,
-                    null
-                );
-                setOrganizations(orgs)
-            });
+            handleFetch({...filters, localities: user.locations.map((l: any) => l.locality)});
         }
     }, [JSON.stringify(user)]);
 
-
-    useEffect(() => {
-        console.log("Organizations", organizations)
-        console.log("hasMore", hasMore)
-    }, [organizations])
-
     const handleFetch = async (currentFilters:any) => {
         setOrgLoading(true);
-        const data = await fetchOrganizations(currentFilters, userDetails);
-        setOrganizations(data);
-        setOrgLoading(false);
+        try {
+            const data = await fetchOrganizations(currentFilters, user);
+            setOrganizations(data);
+            setOrgLoading(false);
+        } catch (error) {
+            console.error("Error fetching organizations:", error);
+            setOrgLoading(false);
+        }
     };
 
-    const handleFetchMore = async (organizations: Organization[], userDetails: any, filters: any, hasMore: boolean) => {
-        console.log("fetching more", filters)
-        console.log("hasMore", hasMore)
+    const handleFetchMore = async (organizations: Organization[], user: any, filters: any, hasMore: boolean) => {
+
         if (!hasMore) return;
         if (orgLoading) return;
         setOrgLoading(true);
-        const data = await fetchMoreOrganizations(organizations, userDetails, filters);
+        const data = await fetchMoreOrganizations(organizations, user, filters);
         console.log("data", data)
         if (data && data.length === 0) {
             setHasMore(false);
             setTimeout(() => {
                 setHasMore(true)
-            }, 1000)
+            }, 2000)
         }
         if (data?.length > 0) {
             setOrganizations((prev) => [...prev, ...data]);
@@ -108,7 +85,10 @@ const Feed = () => {
 
 
     const handleGenerateCSV = async () => {
-        const orgIds = organizations.map((o) => o.id);
+        if (user.subscription_status !== 'active') {
+            throw new Error('This feature is only available to paid users.');
+        }
+        const orgIds = organizations.map((o: any) => o.id);
         const csvData = await generateCSV(orgIds);
         const blob = new Blob([csvData], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -116,7 +96,7 @@ const Feed = () => {
         a.href = url;
         a.download = 'organizations.csv';
         a.click();
-    };
+    }   
 
     const toggleFavorites = () => {
         setFilters((prev) => ({ ...prev, userId: prev.userId ? null : user.id }));
@@ -139,12 +119,12 @@ const Feed = () => {
         return null;
     }
 
-    if (userDetails?.locations?.length === 0) {
+    if (user?.locations?.length === 0) {
         return (
             <div>
                 <h1>Dashboard</h1>
                 <p>
-                    No organizations found. Add a location in your
+                    We're still building your feed. Please refresh the page in a few minutes.
                     <ExternalLink href="/dashboard/settings"> account settings</ExternalLink>.
                 </p>
             </div>
@@ -156,7 +136,7 @@ const Feed = () => {
             <div className={styles.feedMenu}>
                 <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
                 <Filters
-                    userLocations={userDetails.locations}
+                    userLocations={user.locations}
                     filters={filters}
                     toggleFavorites={toggleFavorites}
                     toggleLocality={toggleLocality}
@@ -178,12 +158,13 @@ const Feed = () => {
             </div>
         </div>
     ) : (
-        <div className={`${styles.container} flex-none basis-[400px]`}>
+        <div className={styles.container}>
+            <div style={{display: 'flex', flexDirection: 'row', gap: '1em', width: '100%', justifyContent: 'center'}}>
             <div className={styles.feed} ref={containerRef}>
                 <div className={styles.feedMenu}>
                     <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
                     <Filters
-                        userLocations={userDetails.locations}
+                        userLocations={user.locations}
                         filters={filters}
                         toggleFavorites={toggleFavorites}
                         toggleLocality={toggleLocality}
@@ -204,8 +185,9 @@ const Feed = () => {
                     <CompanyDetails company={activeOrganization} userId={user.id} isActive />
                 )}
             </div>
-            <div className={styles.loadMore}>
+            {/* <div className={styles.loadMore}>
                 {orgLoading && <p>Loading more...</p>}
+            </div> */}
             </div>
         </div>
     );

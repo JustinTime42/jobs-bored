@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import styles from './Link.module.css';
-import { supabase } from '@/src/utils/supabase/client';
+import { createClient } from '@/src/utils/supabase/client';
 
 interface LinkProps {
     href: string;
@@ -10,6 +10,7 @@ interface LinkProps {
 }
 
 const ExternalLink: React.FC<LinkProps> = ({ href, className, children }) => {
+    const supabase = createClient();
 
     const handleOpenLink = async () => {
         await supabase.from('activity_log').insert([

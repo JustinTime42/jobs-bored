@@ -138,10 +138,55 @@ export interface ApolloResponse {
     contacts: any[];
     people: Person[];
   }
+
+export type UserDetails = {
+    id: string;
+    created_at: string;
+    name: string;
+    email: string;
+    avatar_url: string;
+    user_name: string;
+    stripe_customer_id: string;
+    stripe_subscription_id: string;
+    subscription_status: string;
+    trial_ends_at: string;
+    locations: {
+        id: string;
+        created_at: string;
+        formatted_address: string;
+        locality: string;
+        admin_area_level_1: string;
+        admin_area_level_2: string;
+        country: string;
+        page: number;
+    }[];
+}
   
   export interface LocationAutoCompleteProps {
     onSelectLocation: (location: {
         address_components: google.maps.GeocoderAddressComponent[] | undefined;
         formatted_address: string | undefined;
     }) => void;
+}
+
+export type Location = {
+  id: string;
+  created_at: string;
+  locality?: string;
+  country?: string;
+  formatted_address?: string;
+  page?: number;
+  admin_area_level_1?: string;
+  admin_area_level_2?: string;
+}
+
+export type User = {
+  id: string; 
+  email?: string;  
+  name?: string; 
+  avatar_url?: string; 
+  user_name?: string; 
+  stripe_customer_id?: string; 
+  trial_ends_at?: string; 
+  subscription_status?: string; 
 }

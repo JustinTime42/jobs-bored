@@ -5,8 +5,7 @@ import { supabaseAdmin } from '../utils/supabase/admin';
 import { functions } from '../utils/firebase/firebase';
 
 export const saveOrganizations = async (organizations: any[]) => {
-    console.log("Saving organizations")
-    console.log("first org: ", organizations[0])
+
     try {
         const { data, error } = await supabaseAdmin.from("organizations").upsert(organizations).select();
         if (error) {
@@ -21,8 +20,6 @@ export const saveOrganizations = async (organizations: any[]) => {
 };
 
 export const getLocalOrganizations = async (locations: string[] | null, userId: string | null, localities: string[] | null, page_size: number, previous_score: number | null, previous_id: string | null) => {
-    console.log("Getting local organizations", locations)
-    console.log("Getting local organizations", localities)
     
     const { data, error } = await supabaseAdmin
     .rpc('get_organizations_with_filters_and_scores', {
@@ -50,7 +47,6 @@ export const getCompanyDetails = async (orgId: string, userId: string) => {
         console.error('Error fetching company details:', error);
         throw error;
     }
-    console.log(data)
     return data[0] as Organization;
 }
 
@@ -83,7 +79,6 @@ export const getFavoriteCompanies = async (userId: string) => {
     if (error) {
         throw new Error(`Failed to get favorite companies: ${error}`);
     }
-    console.log(data)
     return data.map((d: any) => d.details) as Organization[];
 }
 
@@ -91,7 +86,6 @@ export const scrapeEmails = async (startUrls: string[]) => {
     try {
         const emailScraper = httpsCallable(functions, 'scrapeEmails');
         const { data } = await emailScraper({websites:startUrls});
-        console.log("Emails scraped:", data);
         return data;
     }
     catch (e) {
@@ -126,10 +120,7 @@ export const scrapeEmailsALL = async () => {
             } else {
                 hasMoreData = false;
             }
-            // console.log('Scraping emails for:', Object.keys(data));
         }
-        console.log("Data length", allData.length)
-        console.log("First Element", allData[0])
         const website_urls = allData.map((org: {website_url:string}) => org.website_url);
         scrapeEmails(website_urls);
     }

@@ -24,7 +24,6 @@ import AuthButton from '@/src/components/AuthButton';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'
-import { useUserContext } from '@/src/app/context/UserContext';
 import styles from './NavPanel.module.css';
 
 const drawerWidth = 200;
@@ -36,7 +35,6 @@ interface Props {
 export default function NavPanel({ children }: Props) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const { user, loading, error, fetchUser } = useUserContext();
   const [ activeMenu, setActiveMenu ] = React.useState<string | null>(null);
 
   useEffect(() => {
@@ -174,13 +172,16 @@ export default function NavPanel({ children }: Props) {
         sx={{
           flexGrow: 1,
           p: 3,
-          // width: { md: `calc(100% - ${drawerWidth}px)` },
+          width: { md: `calc(100% - ${drawerWidth}px)` },
+          marginTop: "100px",
+          display: "flex",
+          justifyContent: "center",
         }}
       >
-        <Toolbar />{/*  Spacer to prevent content from being hidden under AppBar */}
         {children}
       </Box>
       </Box>
     </div>
   );
 }
+

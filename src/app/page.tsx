@@ -1,62 +1,57 @@
 "use client";
-import { useUserContext } from "./context/UserContext";
-import { useEffect } from "react";
 import styles from './Index.module.css';
-import BarChartIcon from '@mui/icons-material/BarChart';
 import Header from "../components/Header";
+import { AccountCircle, Business, HowToReg, School, ArrowForward } from "@mui/icons-material";
+
 export default function Index() {
 
   return (
     <div className={styles.container}>
-        <Header />
-        <section className={styles.hero}>
-            <div className={styles.heroCard}>
-                <h1 className={styles.headline}>A better way to find your next tech job!</h1>
-                <p>Tired of hitting <b>easy-apply</b>? Let our platform help you find jobs where you are the <b>only</b> candidate. </p>
-
-            </div>
-            <div className={styles.heroshotContainer}>
-                <img className={styles.heroImage} src="heroshot.png" alt="Frustrated at computer" />
-            </div>
-        </section>
-        <div className={styles.benefits}>
-            <h2>Save Time</h2>
-            <h2>Find Jobs</h2>
-            <h2>Get Hired</h2>
+      <Header />
+      <section className={styles.hero}>
+        <div className={styles.heroCard}>
+          <h2>Be Your Own Recruiter</h2>
+          <p>Tired of hitting <b>easy-apply</b>? Let our platform help you work <b>smarter</b> and find jobs where you are the <b>only</b> candidate.</p>
         </div>
-        <div className={styles.hook}>
-            <h2>Don't Waste Time</h2>
-            <p>Stop spending hours per week scrolling companies and job postings on the big job boards. We'll help you work <b>smarter</b>.</p>     
+        <div className={styles.heroshotContainer}>
+          <img className={styles.heroImage} src="heroshot.png" alt="Frustrated at computer" />
         </div>
-        <div className={styles.features}>
-            <div className={styles.feature}>
-                <h3><BarChartIcon />Placeholder Feature</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
-            </div>
-            <div className={styles.feature}>
-                <h3><BarChartIcon />Placeholder Feature</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
-            </div>
-            <div className={styles.feature}>
-                <h3><BarChartIcon />Placeholder Feature</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
-            </div>
-            <div className={styles.feature}>
-                <h3><BarChartIcon />Placeholder Feature</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
-            </div>
-            <div className={styles.feature}>
-                <h3><BarChartIcon />Placeholder Feature</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
-            </div>
-            <div className={styles.feature}>
-                <h3><BarChartIcon />Placeholder Feature</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
-            </div>
+      </section>
 
+      <div className={styles.benefits}>
+        <h2>Save Time</h2>
+        <h2>Find Jobs</h2>
+        <h2>Get Hired</h2>
+      </div>
 
+      <div className={styles.features}>
+        <div className={styles.feature}>
+          <h3><AccountCircle /> Register</h3>
+          <p>Register using your Github Account. Try it out for free!</p>
         </div>
+        <div className={styles.feature}>
+          <h3><Business /> Find Employers</h3>
+          <p>We find companies in your area already interested in your skills.</p>
+        </div>
+        <div className={styles.feature}>
+          <h3><HowToReg /> Show Your Value</h3>
+          <p>We'll provide contact information for key decision makers in companies that match your profile.</p>
+        </div>
+      </div>
+
+      <section className={styles.mentorship}>
+        <h2><School /> Maximize Your Potential with Expert Guidance</h2>
+        <p>We've partnered with         
+            <a href="https://crushing.digital/" className={styles.mentorLink}>
+                Crushing Digital
+            </a> 
+            to provide you with the skills needed to truly stand out. Learn how to showcase your value effectively with practical tips directly tied to our system.</p>
+
+      </section>
+
+      <footer className={styles.footer}>
+        <small>© 2024 Jobs Bored. All rights reserved.</small>
+      </footer>
     </div>
   );
 }
-
