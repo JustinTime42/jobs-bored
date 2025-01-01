@@ -10,7 +10,7 @@ export const addLocation = async (location: google.maps.places.PlaceResult, user
         
         console.log("location", location)
         console.log("userId", userId)
-        addLocation({location, userId});
+        await addLocation({location, userId});
         return location;   
     }
     catch (e) {
