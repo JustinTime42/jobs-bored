@@ -149,7 +149,7 @@ const Feed = () => {
                         <CompanyCard company={org} />
                     </AccordionSummary>
                     <AccordionDetails>
-                        <CompanyDetails company={org} userId={user.id} isActive={activeOrganization?.id === org.id} />
+                        <CompanyDetails company={org} userId={user.id} isActive />
                     </AccordionDetails>
                 </Accordion>
             ))}
