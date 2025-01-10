@@ -82,8 +82,6 @@ const Feed = () => {
         setOrgLoading(false);
     };
 
-
-
     const handleGenerateCSV = async () => {
         if (user.subscription_status !== 'active') {
             throw new Error('This feature is only available to paid users.');
@@ -144,12 +142,17 @@ const Feed = () => {
                 />
             </div>
             {organizations.map((org, index) => (
-                <Accordion ref={index === organizations.length - 1 ? lastOrganizationRef : null} key={org.id}>
+                <Accordion 
+                    ref={index === organizations.length - 1 ? lastOrganizationRef : null} 
+                    key={org.id}
+                    onChange={() => setActiveOrganization(org)}
+                    expanded={activeOrganization?.id === org.id}
+                >
                     <AccordionSummary>
                         <CompanyCard company={org} />
                     </AccordionSummary>
                     <AccordionDetails>
-                        <CompanyDetails company={org} userId={user.id} isActive />
+                        <CompanyDetails company={org} userId={user.id} isActive={activeOrganization?.id === org.id} />
                     </AccordionDetails>
                 </Accordion>
             ))}

@@ -172,7 +172,7 @@ export default function NavPanel({ children }: Props) {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
+          width: "100%",
           marginTop: "100px",
           display: "flex",
           justifyContent: "center",

@@ -56,8 +56,7 @@
 
 @media only screen and (max-width: 576px) {
   .benefits {
-    display: block;
-    text-align: center;
+    display: none;
   }
   .hero {
     display: block;

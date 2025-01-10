@@ -89,7 +89,6 @@ const UserAccount = () => {
             return 'Free Trial';
         } else return user.subscription_status;
     };
-
     
       const handleManageSubscription = async () => {    
         const url = await handlePortalSession(user.stripe_customer_id);
@@ -109,11 +108,10 @@ const UserAccount = () => {
         router.push('/');
         return null;
     }
-
+ 
     return (
         <div className={styles.container}>
             <h1 className={styles.title}>Account Management</h1>
-
             <div className={styles.info}>
                 <p><strong>Username:</strong> {user.user_metadata.user_name || 'N/A'}</p>
                 <p><strong>Email:</strong> {user.email}</p>

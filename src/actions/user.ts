@@ -38,10 +38,12 @@ export const getUserDetails = async (uid: string, email?: string, name?: string)
 };
 
 async function createNewUser(supabase: any, uid: string, email?: string, name?: string) {
-
     const customer = await stripe.customers.create({
         email: email!,
         name: name || undefined,
+        metadata: {
+            uid: uid,
+        },
     });
 
 
