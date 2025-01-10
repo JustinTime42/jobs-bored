@@ -6,6 +6,7 @@
   width: 100%;
   max-width: 1800px;
   margin: 0 auto;
+  padding: 0;
 }
 
 .favorites {
@@ -24,6 +25,8 @@
   overflow-y: scroll;
   overflow-y: scroll0px;
   flex-shrink: 0;
+  padding: 0;
+  width: 100%;
 }
 
 .feedMenu {

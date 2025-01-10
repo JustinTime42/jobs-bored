@@ -171,7 +171,7 @@ export default function NavPanel({ children }: Props) {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 0, sm: 3 },
           width: "100%",
           marginTop: "100px",
           display: "flex",

@@ -28,7 +28,7 @@ const Feed = () => {
     const { user, loading: userLoading, error: userError } = useUserContext();
     const [filters, setFilters] = useState(initialFilters);
     const [organizations, setOrganizations] = useState<Organization[]>([]);
-    const [activeOrganization, setActiveOrganization] = useState<Organization | null>(null);
+    const [activeOrganization, setActiveOrganization] = useState<Organization | undefined>(undefined);
     const [orgLoading, setOrgLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const router = useRouter();
@@ -56,6 +56,7 @@ const Feed = () => {
         try {
             const data = await fetchOrganizations(currentFilters, user);
             setOrganizations(data);
+            console.log("data", data)
             setOrgLoading(false);
         } catch (error) {
             console.error("Error fetching organizations:", error);
@@ -109,6 +110,15 @@ const Feed = () => {
         }));
     };
 
+    const handleAccordionChange = (orgId: string) => {
+        console.log("orgId", orgId)
+        if (activeOrganization?.id === orgId) {
+            setActiveOrganization(undefined);
+        } else {
+            setActiveOrganization(organizations.find((org: any) => org.id === orgId));
+        }
+    };
+
     if (userLoading) return <p>Loading...</p>;
     if (userError) return <p>Error: {userError.message}</p>;
 
@@ -145,7 +155,7 @@ const Feed = () => {
                 <Accordion 
                     ref={index === organizations.length - 1 ? lastOrganizationRef : null} 
                     key={org.id}
-                    onChange={() => setActiveOrganization(org)}
+                    onChange={() => handleAccordionChange(org.id)}
                     expanded={activeOrganization?.id === org.id}
                 >
                     <AccordionSummary>
