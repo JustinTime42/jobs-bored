@@ -179,14 +179,3 @@ export type Location = {
   admin_area_level_1?: string;
   admin_area_level_2?: string;
 }
-
-export type User = {
-  id: string; 
-  email?: string;  
-  name?: string; 
-  avatar_url?: string; 
-  user_name?: string; 
-  stripe_customer_id?: string; 
-  trial_ends_at?: string; 
-  subscription_status?: string; 
-}

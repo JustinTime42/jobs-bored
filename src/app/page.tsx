@@ -2,6 +2,8 @@
 import styles from './Index.module.css';
 import Header from "../components/Header";
 import { AccountCircle, Business, HowToReg, School, ArrowForward } from "@mui/icons-material";
+import AuthButton from '../components/AuthButton';
+import Button from '@mui/material/Button';
 
 export default function Index() {
 
@@ -12,6 +14,12 @@ export default function Index() {
         <div className={styles.heroCard}>
           <h2>Be Your Own Recruiter</h2>
           <p>Tired of hitting <b>easy-apply</b>? Let our platform help you work <b>smarter</b> and find jobs where you are the <b>only</b> candidate.</p>
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <Button variant="contained" sx={{backgroundColor: '#ff4136', padding: '10px 20px', marginTop: '30px'}} size="large" href="/dashboard/feed">
+            <p style={{fontWeight: 'bold'}}>Try It Free!</p>
+          </Button>
+          </div>
+
         </div>
         <div className={styles.heroshotContainer}>
           <img className={styles.heroImage} src="heroshot.png" alt="Frustrated at computer" />

@@ -3,8 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { createClient } from '@/src/utils/supabase/client';
 import { handleAuthCallback } from '@/src/actions/auth'; // New import
-import { getUserDetails } from '@/src/actions/user';
-import { User } from '@/src/definitions';
+import { User } from '@supabase/supabase-js';
 
 interface UserContextProps {
   user: any;

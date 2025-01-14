@@ -12,6 +12,22 @@ export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Jobs Bored",
   description: "Tools to help you get a job in tech",
+  openGraph: {
+    title: "Jobs Bored",
+    description: "Tools to help you get a job in tech",
+    url: defaultUrl,
+    siteName: "Jobs Bored",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Jobs Bored - Tools to help you get a job in tech",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 const inter = Inter({
