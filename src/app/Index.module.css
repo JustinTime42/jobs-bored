@@ -14,8 +14,8 @@
 }
 
 .heroshotContainer {
-  border-radius: 50px;
   overflow: hidden;
+  padding: 8px;
 }
 
 .hook {
@@ -59,13 +59,13 @@
     display: none;
   }
   .hero {
-    display: block;
+    display: flex;
+    flex-direction: column-reverse;
   }
   .heroCard {
     width: 100%;
   }
   .heroshotContainer {
-    height: 300px;
     width: 100%;
     overflow: hidden;
   }
@@ -98,12 +98,12 @@
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-    margin-bottom: 50px;
-    gap: 20px;
+    margin-bottom: 48px;
+    gap: 32px;
+    padding: 8px;
   }
   .hero {
     display: flex;
-    height: 600px;
     width: 100%;
     align-items: center;
   }

@@ -16,7 +16,7 @@ export default function Index() {
           <p>Tired of hitting <b>easy-apply</b>? Let our platform help you work <b>smarter</b> and find jobs where you are the <b>only</b> candidate.</p>
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <Button variant="contained" sx={{backgroundColor: '#ff4136', padding: '10px 20px', marginTop: '30px'}} size="large" href="/dashboard/feed">
-            <p style={{fontWeight: 'bold'}}>Try It Free!</p>
+            <p style={{fontWeight: 'bold'}}>Start Your Free Trial Now!</p>
           </Button>
           </div>
 
