@@ -140,7 +140,7 @@ const Feed = () => {
     }
 
     return isMobile ? (
-        <div className={styles.feed} ref={containerRef}>
+        <div className={styles.feed} style={{width: '100%'}} ref={containerRef}>
             <div className={styles.feedMenu}>
                 <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
                 <Filters
