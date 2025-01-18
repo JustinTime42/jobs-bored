@@ -23,6 +23,7 @@ const UserAccount = () => {
     const supabase = createClient();
     useEffect(() => {
         if (user) {
+            console.log('user', user)
             const channel = supabase
             .channel('public:users_locations')
             .on(
@@ -113,7 +114,7 @@ const UserAccount = () => {
         <div className={styles.container}>
             <h1 className={styles.title}>Account Management</h1>
             <div className={styles.info}>
-                <p><strong>Username:</strong> {user.user_metadata.user_name || 'N/A'}</p>
+                <p><strong>Username:</strong> {user.user_name || user.user_metadata?.preferred_username || user.user_metadata?.user_name || 'User'}</p>
                 <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>Subscription Status:</strong> {getSubStatus()}</p>
                 {

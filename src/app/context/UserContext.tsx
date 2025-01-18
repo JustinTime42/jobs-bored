@@ -1,11 +1,9 @@
 'use client';
-
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from 'react';
 import { createClient } from '@/src/utils/supabase/client';
-import { handleAuthCallback } from '@/src/actions/auth'; // New import
-import { User } from '@supabase/supabase-js';
+import { handleAuthCallback } from '@/src/actions/auth';
 
-interface UserContextProps {
+interface UserContextType {
   user: any;
   loading: boolean;
   error: any;
@@ -13,105 +11,155 @@ interface UserContextProps {
   fetchUser: () => Promise<void>;
 }
 
-const UserContext = createContext<UserContextProps | undefined>(undefined);
+const UserContext = createContext<UserContextType>({
+  user: null,
+  loading: true,
+  error: null,
+  isInitialized: false,
+  fetchUser: async () => {},
+});
+
+export const useUserContext = () => useContext(UserContext);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const supabase = createClient();
+  const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const lastFetchTime = useRef<number>(Date.now());
 
   const fetchUser = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
       
       if (session?.user) {
         const userDetails = await handleAuthCallback();
-        setUser({ ...session.user, ...userDetails });
+        if (userDetails) {
+          setUser(userDetails);
+        } else {
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
+      lastFetchTime.current = Date.now();
     } catch (error: any) {
       console.error('Error fetching user:', error);
       setError(error instanceof Error ? error : new Error(error.message));
       setUser(null);
     } finally {
       setLoading(false);
+      setIsInitialized(true);
     }
-  }, [supabase.auth]);
+  }, []);
 
+  // Initial setup and auth state changes
   useEffect(() => {
-    fetchUser().finally(() => setIsInitialized(true));
-  }, [fetchUser]);
+    let mounted = true;
+    let focusTimeout: NodeJS.Timeout;
 
-  useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        fetchUser();
-      } else {
+    const initializeAuth = async () => {
+      if (!isInitialized) {
+        try {
+          await fetchUser();
+        } finally {
+          if (mounted) {
+            setIsInitialized(true);
+          }
+        }
+      }
+    };
+
+    initializeAuth();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
+      if (event === 'SIGNED_OUT') {
         setUser(null);
         setLoading(false);
-        setError(null);
+      } else if (event === 'SIGNED_IN') {
+        await fetchUser();
       }
     });
 
-    return () => data.subscription.unsubscribe();
-  }, [fetchUser]);
+    // Handle focus events with debounce
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        clearTimeout(focusTimeout);
+        focusTimeout = setTimeout(() => {
+          const lastInteractionTime = (window as any).lastUserInteraction || 0;
+          const timeSinceLastFetch = Date.now() - lastFetchTime.current;
+          const timeSinceLastInteraction = Date.now() - lastInteractionTime;
+          
+          if (user?.id && 
+              timeSinceLastFetch > 3000000 && 
+              timeSinceLastInteraction > 10000) {
+            setLoading(true);
+            fetchUser();
+          }
+        }, 1000);
+      }
+    };
 
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      mounted = false;
+      clearTimeout(focusTimeout);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      authListener.subscription.unsubscribe();
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+      }
+    };
+  }, [fetchUser, isInitialized, user?.id]);
+
+  // Realtime subscription for user data updates
   useEffect(() => {
     if (!user?.id) return;
-     const channel = supabase
-      .channel('public:users_locations')
+
+    if (realtimeChannelRef.current) {
+      supabase.removeChannel(realtimeChannelRef.current);
+    }
+
+    realtimeChannelRef.current = supabase
+      .channel(`public:users:${user.id}`)
       .on(
         'postgres_changes',
         { 
           event: '*', 
           schema: 'public', 
-          table: 'users_locations', 
-          filter: `user_id=eq.${user.id}` 
+          table: 'users',
+          filter: `id=eq.${user.id}` 
         },
         async () => {
-          console.log('Realtime update received for user locations');
-          const { data: { user: authUser } } = await supabase.auth.getUser();
-          if (authUser) {
-            const userDetails = await handleAuthCallback();
-            setUser(prevUser => prevUser ? { ...prevUser, ...userDetails } : null);
-          }
+          await fetchUser();
         }
       )
       .subscribe();
-     return () => {
-      supabase.removeChannel(channel);
+
+    return () => {
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+      }
     };
-  }, [user?.id, supabase]);
+  }, [user?.id, fetchUser]);
 
   const value = {
     user,
     loading,
-    isInitialized,
     error,
+    isInitialized,
     fetchUser,
   };
-
-  if (!isInitialized) {
-    return <p>Loading...</p>;
-  }
 
   return (
     <UserContext.Provider value={value}>
       {children}
     </UserContext.Provider>
   );
-};
-
-export const useUserContext = () => {
-  const context = useContext(UserContext);
-  if (!context) {
-    throw new Error('useUserContext must be used within a UserProvider');
-  }
-  return context;
-};
+};  

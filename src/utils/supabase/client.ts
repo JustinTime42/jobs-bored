@@ -8,6 +8,45 @@ export function createClient() {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+        debug: false,
+        // Add these settings to prevent aggressive session checking
+        storageKey: 'supabase.auth.token',
+        storage: {
+          getItem: (key) => {
+            if (typeof window !== 'undefined') {
+              return window.localStorage.getItem(key);
+            }
+            return null;
+          },
+          setItem: (key, value) => {
+            if (typeof window !== 'undefined') {
+              window.localStorage.setItem(key, value);
+            }
+          },
+          removeItem: (key) => {
+            if (typeof window !== 'undefined') {
+              window.localStorage.removeItem(key);
+            }
+          },
+        },
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 1,
+        },
+      },
+      // Add global options to reduce unnecessary network requests
+      global: {
+        headers: {
+          'Cache-Control': 'no-store',
+        },
+        fetch: (url, options) => {
+          return fetch(url, {
+            ...options,
+          });
+        },
       },
     }
   )
