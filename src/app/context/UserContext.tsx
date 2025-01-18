@@ -29,15 +29,20 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const supabase = createClient();
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const currentSession = useRef<any>(null);
+  const isAuthenticating = useRef(false);
 
   const fetchUser = useCallback(async (force = false) => {
+    if (isAuthenticating.current) return;
+    
     try {      
+      isAuthenticating.current = true;
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
 
       // Skip if session hasn't changed
       if (!force && JSON.stringify(session) === JSON.stringify(currentSession.current)) {
         setLoading(false);
+        setIsInitialized(true);
         return;
       }
       
@@ -46,6 +51,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       if (!session) {
         setUser(null);
         setLoading(false);
+        setIsInitialized(true);
         return;
       }
 
@@ -58,6 +64,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
       setIsInitialized(true);
+      isAuthenticating.current = false;
     }
   }, []);
 
@@ -78,7 +85,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    if (!window.location.href.includes('code=')) {
+    // Only fetch if not in auth callback and not already authenticating
+    if (!window.location.href.includes('code=') && !isAuthenticating.current) {
       fetchUser();
     }
 

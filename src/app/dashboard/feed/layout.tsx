@@ -13,10 +13,6 @@ export default function Layout({ children }: Props) {
 
   useEffect(() => {
     if (loading) return;
-    if (!user) {
-      router.push('/');
-      return;
-    }
 
     if (user.locations.length === 0 || !user.locations) {
       router.push('/dashboard/settings');

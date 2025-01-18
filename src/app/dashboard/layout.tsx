@@ -10,27 +10,33 @@ interface Props {
 
 export default function Layout({ children }: Props) {
   const router = useRouter();
-  const { user, loading } = useUserContext();
+  const { user, loading, isInitialized } = useUserContext();
 
   useEffect(() => {
-    if (loading) return;
+    if (!isInitialized || loading) return;
+
     if (!user) {
       router.push('/');
       return;
     }
+
     const pathname = window.location.pathname;
-    
     if (pathname === '/dashboard') {
-      if ( user.locations?.length === 0 || !user.locations) {
+      if (!user.locations?.length) {
         router.push('/dashboard/settings');
       } else {
         router.push('/dashboard/feed');
       }
-      return;
     }
-  }, [user, loading]);
+  }, [user, loading, isInitialized]);
 
+  if (!isInitialized || loading) {
+    return null;
+  }
 
+  if (!user) {
+    return null;
+  }
 
   return (
     <NavPanel>

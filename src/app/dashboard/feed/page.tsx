@@ -46,12 +46,6 @@ const Feed = () => {
     }, [orgLoading, hasMore, user, filters, organizations]);
 
     useEffect(() => {
-        if (!userLoading && !user) {
-            router.push('/');
-        }
-    }, [user, userLoading, router]);
-
-    useEffect(() => {
         if (user) {
             handleFetch({...filters, localities: user?.locations.map((l: any) => l.locality)} || {});
         }
