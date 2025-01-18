@@ -22,28 +22,23 @@ const UserAccount = () => {
     const scriptLoaded = useLoadScript(`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_PLACES_KEY}&libraries=places`);
     const supabase = createClient();
     useEffect(() => {
-        if (user) {
-            console.log('user', user)
-            const channel = supabase
-            .channel('public:users_locations')
-            .on(
+        if (!user) return;
+        
+        const channel = supabase
+          .channel('public:users_locations')
+          .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'users_locations' },
             (payload) => {
-                fetchUser();
+              fetchUser();
             }
-            )
-            .subscribe((status) => {
-            if (status === 'SUBSCRIBED') {
-                console.log('Subscribed to realtime updates on users_locations');
-            }
-            });
-
-            return () => {
-                supabase.removeChannel(channel);
-            };
-        }
-    }, [JSON.stringify(user)]);
+          )
+          .subscribe();
+      
+        return () => {
+          supabase.removeChannel(channel);
+        };
+    }, [user?.id]);
 
     const handleAddLocation = async () => {
         console.log(newLocation)

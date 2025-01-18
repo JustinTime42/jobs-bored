@@ -6,13 +6,10 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
         flowType: 'pkce',
-        debug: false,
-        // Add these settings to prevent aggressive session checking
-        storageKey: 'supabase.auth.token',
+        persistSession: true,
+        detectSessionInUrl: false,  // Changed from true
+        autoRefreshToken: false,    // Changed from true
         storage: {
           getItem: (key) => {
             if (typeof window !== 'undefined') {
@@ -30,24 +27,13 @@ export function createClient() {
               window.localStorage.removeItem(key);
             }
           },
-        },
+        }
       },
-      realtime: {
-        params: {
-          eventsPerSecond: 1,
-        },
-      },
-      // Add global options to reduce unnecessary network requests
       global: {
         headers: {
           'Cache-Control': 'no-store',
-        },
-        fetch: (url, options) => {
-          return fetch(url, {
-            ...options,
-          });
-        },
-      },
+        }
+      }
     }
   )
 }

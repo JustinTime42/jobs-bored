@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode, useMemo } from 'react';
 import { createClient } from '@/src/utils/supabase/client';
 import { handleAuthCallback } from '@/src/actions/auth';
 
@@ -28,24 +28,29 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const supabase = createClient();
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const lastFetchTime = useRef<number>(Date.now());
+  const currentSession = useRef<any>(null);
 
-  const fetchUser = useCallback(async () => {
-    try {
+  const fetchUser = useCallback(async (force = false) => {
+    try {      
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
-      
-      if (session?.user) {
-        const userDetails = await handleAuthCallback();
-        if (userDetails) {
-          setUser(userDetails);
-        } else {
-          setUser(null);
-        }
-      } else {
-        setUser(null);
+
+      // Skip if session hasn't changed
+      if (!force && JSON.stringify(session) === JSON.stringify(currentSession.current)) {
+        setLoading(false);
+        return;
       }
-      lastFetchTime.current = Date.now();
+      
+      currentSession.current = session;
+
+      if (!session) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      const userDetails = await handleAuthCallback();
+      setUser(userDetails || null);
     } catch (error: any) {
       console.error('Error fetching user:', error);
       setError(error instanceof Error ? error : new Error(error.message));
@@ -56,110 +61,46 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Initial setup and auth state changes
   useEffect(() => {
-    let mounted = true;
-    let focusTimeout: NodeJS.Timeout;
-
-    const initializeAuth = async () => {
-      if (!isInitialized) {
-        try {
-          await fetchUser();
-        } finally {
-          if (mounted) {
-            setIsInitialized(true);
-          }
-        }
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      // Skip if it's the same session on focus
+      if (session?.user?.id === currentSession.current?.user?.id && event === 'SIGNED_IN') {
+        return;
       }
-    };
 
-    initializeAuth();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_IN') {
+        setLoading(true);
+        fetchUser(true);
+      } else if (event === 'SIGNED_OUT') {
+        currentSession.current = null;
         setUser(null);
         setLoading(false);
-      } else if (event === 'SIGNED_IN') {
-        await fetchUser();
       }
     });
 
-    // Handle focus events with debounce
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        clearTimeout(focusTimeout);
-        focusTimeout = setTimeout(() => {
-          const lastInteractionTime = (window as any).lastUserInteraction || 0;
-          const timeSinceLastFetch = Date.now() - lastFetchTime.current;
-          const timeSinceLastInteraction = Date.now() - lastInteractionTime;
-          
-          if (user?.id && 
-              timeSinceLastFetch > 3000000 && 
-              timeSinceLastInteraction > 10000) {
-            setLoading(true);
-            fetchUser();
-          }
-        }, 1000);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    if (!window.location.href.includes('code=')) {
+      fetchUser();
+    }
 
     return () => {
-      mounted = false;
-      clearTimeout(focusTimeout);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       authListener.subscription.unsubscribe();
       if (realtimeChannelRef.current) {
         supabase.removeChannel(realtimeChannelRef.current);
       }
     };
-  }, [fetchUser, isInitialized, user?.id]);
+  }, [fetchUser]);
 
-  // Realtime subscription for user data updates
-  useEffect(() => {
-    if (!user?.id) return;
-
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current);
-    }
-
-    realtimeChannelRef.current = supabase
-      .channel(`public:users:${user.id}`)
-      .on(
-        'postgres_changes',
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'users',
-          filter: `id=eq.${user.id}` 
-        },
-        async () => {
-          await fetchUser();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current);
-      }
-    };
-  }, [user?.id, fetchUser]);
-
-  const value = {
+  const value = useMemo(() => ({
     user,
     loading,
     error,
     isInitialized,
-    fetchUser,
-  };
+    fetchUser: () => fetchUser(true)
+  }), [user, loading, error, isInitialized, fetchUser]);
 
   return (
     <UserContext.Provider value={value}>
       {children}
     </UserContext.Provider>
   );
-};  
+};

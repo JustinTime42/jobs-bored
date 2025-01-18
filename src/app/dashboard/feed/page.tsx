@@ -46,10 +46,16 @@ const Feed = () => {
     }, [orgLoading, hasMore, user, filters, organizations]);
 
     useEffect(() => {
-        if (user) {
-            handleFetch({...filters, localities: user.locations.map((l: any) => l.locality)});
+        if (!userLoading && !user) {
+            router.push('/');
         }
-    }, [JSON.stringify(user)]);
+    }, [user, userLoading, router]);
+
+    useEffect(() => {
+        if (user) {
+            handleFetch({...filters, localities: user?.locations.map((l: any) => l.locality)} || {});
+        }
+    }, [user, userLoading]);
 
     const handleFetch = async (currentFilters:any) => {
         setOrgLoading(true);
@@ -122,12 +128,7 @@ const Feed = () => {
     if (userLoading) return <p>Loading...</p>;
     if (userError) return <p>Error: {userError.message}</p>;
 
-    if (!user) {
-        router.push('/');
-        return null;
-    }
-
-    if (user?.locations?.length === 0) {
+    if (!user?.locations || user?.locations?.length === 0) {
         return (
             <div>
                 <h1>Dashboard</h1>
@@ -144,7 +145,7 @@ const Feed = () => {
             <div className={styles.feedMenu}>
                 <AsyncButton asyncAction={handleGenerateCSV} label="Export" />
                 <Filters
-                    userLocations={user.locations}
+                    userLocations={user?.locations}
                     filters={filters}
                     toggleFavorites={toggleFavorites}
                     toggleLocality={toggleLocality}

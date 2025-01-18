@@ -1,7 +1,7 @@
 "use client";
 import { signInWithGitHub, signOutUser } from "@/src/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserContext } from "@/src/app/context/UserContext";
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import Link from "next/link";
@@ -22,6 +22,16 @@ export default function AuthButton() {
     }
   };
 
+  useEffect(() => {
+    if (user) {
+      setIsLoggingIn(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    console.log('user', user)
+  }, [user])
+
   const handleLogout = async () => {
     try {
       await signOutUser();
@@ -33,14 +43,14 @@ export default function AuthButton() {
   };
 
   // Show loading only during initial auth check
-  if (loading && !isLoggingIn) {
+  if ((loading && !isLoggingIn) || isLoggingIn) {
     return <div>Loading...</div>;
   }
 
   return user ? (
     <div className="flex items-center gap-4">
       <Link href={'/dashboard/settings'}>
-        Hey, {user.user_metadata?.preferred_username || user.user_metadata?.user_name || 'User'}! {` `}
+        Hey, {user.user_name || user.user_metadata?.preferred_username || user.user_metadata?.user_name || 'User'}! {` `}
         <ManageAccountsIcon />
       </Link>
       <button 
