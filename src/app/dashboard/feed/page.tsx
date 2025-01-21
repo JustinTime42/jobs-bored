@@ -15,7 +15,7 @@ import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import { fetchMoreOrganizations, fetchOrganizations } from "./utils";
 
 const initialFilters = {
-    localities: null as string[] | null,
+    localities: [] as string[] | null,
     userId: null,
     page_size:20,
     previous_score: null,
@@ -26,12 +26,11 @@ const Feed = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const observer = useRef<IntersectionObserver | null>(null);
     const { user, loading: userLoading, error: userError } = useUserContext();
-    const [filters, setFilters] = useState(initialFilters);
+    const [filters, setFilters] = useState({...initialFilters, localities: user?.locations.map((l: any) => l.locality) || []});
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [activeOrganization, setActiveOrganization] = useState<Organization | undefined>(undefined);
     const [orgLoading, setOrgLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-    const router = useRouter();
     const isMobile = useMediaQuery({ maxWidth: 1200 });
     const lastOrganizationRef = useCallback((node: HTMLDivElement) => {
         if (orgLoading) return;
@@ -47,14 +46,19 @@ const Feed = () => {
 
     useEffect(() => {
         if (user) {
-            handleFetch({...filters, localities: user?.locations.map((l: any) => l.locality)} || {});
+            handleFetch(filters);
         }
     }, [user, userLoading]);
 
+    useEffect(() => {
+        console.log("filters", filters)
+    }, [filters])
+
     const handleFetch = async (currentFilters:any) => {
+        console.log("currentFilters", currentFilters)
         setOrgLoading(true);
         try {
-            const data = await fetchOrganizations(currentFilters, user);
+            const data = await fetchOrganizations({...currentFilters}, user);
             setOrganizations(data);
             console.log("data", data)
             setOrgLoading(false);
@@ -193,9 +197,9 @@ const Feed = () => {
                     <CompanyDetails company={activeOrganization} userId={user.id} isActive />
                 )}
             </div>
-            {/* <div className={styles.loadMore}>
+            <div className={styles.loadMore}>
                 {orgLoading && <p>Loading more...</p>}
-            </div> */}
+            </div>
             </div>
         </div>
     );

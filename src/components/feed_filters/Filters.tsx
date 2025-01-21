@@ -39,10 +39,8 @@ const Filters = ({userLocations, filters, toggleFavorites, toggleLocality, submi
                     toggleLocality(location.locality)
                 }
             }) 
-        }
- 
+        } 
         setIncludeRemote(!includeRemote)
-
     }
     return (
         <Accordion>

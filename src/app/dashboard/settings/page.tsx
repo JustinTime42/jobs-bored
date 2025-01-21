@@ -87,6 +87,7 @@ const UserAccount = () => {
     };
     
       const handleManageSubscription = async () => {    
+        console.log('user', user)
         const url = await handlePortalSession(user.stripe_customer_id);
         console.log('url', url)
         if (url) {
