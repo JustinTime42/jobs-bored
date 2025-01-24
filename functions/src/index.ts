@@ -113,6 +113,17 @@ export const addLocation = onCall(async (request: any) => {
         const allOrgWebsites = {} as any;
         const startingPage = newLocation.page || 1;
         let currentPage = startingPage;
+        const country =
+            location.address_components.find((component: any) => component.types.includes("country"))?.long_name;
+        const countriesWithStates =
+            ["Canada", "United States", "Australia", "India", "Brazil", "Mexico", "Germany"];
+        let apiLocation = location.formatted_address;
+        if (!countriesWithStates.includes(country)) {
+            const city =
+                location.address_components.find((component: any) => component.types.includes("locality"))?.long_name;
+            apiLocation = `${city}, ${country}`;
+        }
+        console.log("API Location:", apiLocation);
         const perPage = 100;
         let totalPages = startingPage + 1;
         while (currentPage <= (10 + startingPage) && currentPage <= totalPages) {
@@ -133,9 +144,10 @@ export const addLocation = onCall(async (request: any) => {
                         "software engineer",
                     ],
                     organization_num_employees_ranges: ["5,5000"],
-                    person_locations: [location.formatted_address],
+                    person_locations: location.formatted_address,
                 }),
             });
+
 
             const data = await response.json();
             console.log("Data:", data);
@@ -220,7 +232,10 @@ export const saveOrganizations = async (organizations: any) => {
     try {
         // Don't forget there is an upsert triggered function in Supabase that helps with this.
         const {data, error} = await supabaseAdmin
-            .from("organizations").upsert(organizations, {onConflict: "id"}).select();
+            .from("organizations").upsert(organizations, {
+                onConflict: "id",
+                ignoreDuplicates: false,
+            }).select();
         if (error) {
             console.log(JSON.stringify(error));
             throw error;

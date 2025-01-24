@@ -13,7 +13,7 @@ export default function Index() {
       <section className={styles.hero}>
         <div className={styles.heroCard}>
           <h2>Be Your Own Recruiter</h2>
-          <p>Tired of hitting <b>easy-apply</b>? Let our platform help you work <b>smarter</b> and find jobs where you are the <b>only</b> candidate.</p>
+          <p>Tired of hitting <b>easy-apply</b>? Let our platform help you work <b>smarter</b> and find opportunities where you are the <b>only</b> candidate.</p>
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <Button variant="contained" sx={{backgroundColor: '#ff4136', padding: '10px 20px', marginTop: '30px'}} size="large" href="/dashboard/feed">
             <p style={{fontWeight: 'bold'}}>Start Your Free Trial Now!</p>
@@ -28,21 +28,21 @@ export default function Index() {
 
       <div className={styles.benefits}>
         <h2>Save Time</h2>
-        <h2>Find Jobs</h2>
+        <h2>Find Employers</h2>
         <h2>Get Hired</h2>
       </div>
 
       <div className={styles.features}>
         <div className={styles.feature}>
           <h3><AccountCircle /> Register</h3>
-          <p>Register using your Github Account. Try it out for free!</p>
+          <p>Register using your Github Account.</p>
         </div>
         <div className={styles.feature}>
           <h3><Business /> Find Employers</h3>
-          <p>We find companies in your area already interested in your skills.</p>
+          <p>We find companies in your area who hire developers like you.</p>
         </div>
         <div className={styles.feature}>
-          <h3><HowToReg /> Show Your Value</h3>
+          <h3><HowToReg /> Access Decision Makers.</h3>
           <p>We'll provide contact information for key decision makers in companies that match your profile.</p>
         </div>
       </div>

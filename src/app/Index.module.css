@@ -113,7 +113,7 @@
   .features {
     display: block;
     margin: 0 auto;
-    max-width: 650px;
+    max-width: 800px;
   }
   .heroCard {
     width: 60%;
@@ -138,7 +138,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(2, auto);
-    max-width: 1000px;
+    max-width: 1100px;
   }
   .about {
     width: 50%;
