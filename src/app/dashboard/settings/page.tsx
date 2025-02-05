@@ -4,7 +4,7 @@ import { useUserContext } from '../../context/UserContext';
 import { useRouter } from 'next/navigation';
 import LocationAutoComplete from './LocationAutoComplete';
 import AsyncButton from '@/src/components/async_button/AsyncButton';
-import { addLocation } from '@/src/actions/locations';
+import { addLocation, populateOrganizations } from '@/src/actions/locations';
 import Location from '@/src/components/location/Location';
 import { DetailsResult, Suggestion } from 'use-places-autocomplete';
 import useLoadScript from '../../hooks/useLoadScript';
@@ -13,11 +13,13 @@ import styles from './page.module.css';
 import Button from '@/src/components/button/Button';
 import { handleNewSubscription, handlePortalSession } from '@/src/actions/stripe';
 import { createClient } from '@/src/utils/supabase/client';
+import type { Location as LocationType }  from '@/src/definitions';
 
 
 const UserAccount = () => {
     const { user, loading, error, isInitialized, fetchUser } = useUserContext();
     const [newLocation, setNewLocation] = useState<any>({});
+    const [newLocationLoading, setNewLocationLoading] = useState(false);
     const router = useRouter();
     const scriptLoaded = useLoadScript(`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_PLACES_KEY}&libraries=places`);
     const supabase = createClient();
@@ -31,6 +33,7 @@ const UserAccount = () => {
             { event: '*', schema: 'public', table: 'users_locations' },
             (payload) => {
               fetchUser();
+              setNewLocationLoading(false);
             }
           )
           .subscribe();
@@ -41,14 +44,22 @@ const UserAccount = () => {
     }, [user?.id]);
 
     const handleAddLocation = async () => {
+        setNewLocationLoading(true);
         console.log(newLocation)
         const locality = newLocation.address_components?.find((component: any) => component.types.includes('locality'))?.long_name;
         if (!locality) {
             alert('Invalid: You must select a valid city from the dropdown');
+            setNewLocationLoading(false);
             return;
         }
+        if (user?.locations.some((i:LocationType)=>i.formatted_address === newLocation.formatted_address)) {
+            alert('Location already exists');
+            setNewLocationLoading(false);
+            return;
+        }
+        
         try {
-            await addLocation(newLocation, user.id);
+            await addLocation(newLocation, user.id);           
             setNewLocation({} as Suggestion);
         } catch (error) {
             throw error
@@ -109,6 +120,7 @@ const UserAccount = () => {
     return (
         <div className={styles.container}>
             <h1 className={styles.title}>Account Management</h1>
+            <AsyncButton asyncAction={populateOrganizations} label="Populate Organizations" />
             <div className={styles.info}>
                 <p><strong>Username:</strong> {user.user_name || user.user_metadata?.preferred_username || user.user_metadata?.user_name || 'User'}</p>
                 <p><strong>Email:</strong> {user.email}</p>
@@ -130,12 +142,13 @@ const UserAccount = () => {
             <div className={styles.locations}>
                 <p style={{margin:"4px"}}> Locations: </p>
                 {user?.locations?.length === 0 && <div className={styles.begin}>To begin, enter your city below.</div>}
-                {user?.locations && user.locations.map((location: string, i: number) => (
+                {user?.locations && user.locations.map((location: LocationType, i: number) => (
                     <Location key={i} location={location} handleRemoveLocation={handleRemovelocation} />
                 ))}
+                {newLocationLoading && <p>Processing new location...</p>}
                 <div style={{marginTop:"16px"}}>
                         { !scriptLoaded ? <p>Loading...</p> :
-                        <LocationAutoComplete onSelectLocation={(location) => setNewLocation(location)} />
+                        <LocationAutoComplete onSelectLocation={(location) => setNewLocation(location)} shouldClearInput={newLocationLoading} />
                         }
                     <AsyncButton asyncAction={handleAddLocation} label="Add Location" />
                 </div>

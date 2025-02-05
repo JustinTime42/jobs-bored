@@ -1,10 +1,12 @@
+import type { Location } from '@/src/definitions';
 import styles from './Location.module.css';
 import CloseIcon from '@mui/icons-material/Close';
 
 type LocationProps = {
-    location: any;
-    handleRemoveLocation: (location: string) => void;
+    location: Location;
+    handleRemoveLocation: (location: Location) => void;
 };
+
 const Location = ({location, handleRemoveLocation}: LocationProps) => {
     return (
         <div className={styles.location}>

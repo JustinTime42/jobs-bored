@@ -167,7 +167,9 @@ export type UserDetails = {
         address_components: google.maps.GeocoderAddressComponent[] | undefined;
         formatted_address: string | undefined;
     }) => void;
+    shouldClearInput: boolean;
 }
+
 
 export type Location = {
   id: string;

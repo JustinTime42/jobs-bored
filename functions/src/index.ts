@@ -72,8 +72,125 @@ export const getPeopleLabsData = async (websiteUrls: string[]) => {
     }
     return data;
 };
+export const populateOrganizations = onCall({timeoutSeconds: 600, memory: "4GiB"}, async (request: any) => {
+    const {organizationIds} = request.data;
+    console.log("First organization id:", organizationIds[0]);
+    console.log("Populating organizations:", organizationIds.length);
+    // try {
+    const results = await getCompanyPeople(organizationIds);
+    console.log("Results:", results);
+    return results;
+    // } catch (e) {
+    //     console.error("Error populating organizations:", e);
+    //     return [];
+    // }
+});
 
-export const addLocation = onCall(async (request: any) => {
+export const getCompanyPeople = async (companyIds: string[]) => {
+    console.log("Getting company people for companies:", companyIds.length);
+    console.log("companyIds:", companyIds);
+    const supabaseAdmin = createAdminClient();
+    try {
+        const requestHeaders = {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+            "X-Api-Key": process.env.APOLLO_API_KEY || "",
+        };
+        let allPeople: Person[] = [];
+        let page = 1;
+        const perPage = 100;
+        let totalPages = 1;
+
+        while (page <= totalPages) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            const response = await fetch("https://api.apollo.io/v1/mixed_people/search", {
+                method: "POST",
+                headers: requestHeaders,
+                body: JSON.stringify({
+                    organization_ids: companyIds,
+                    per_page: perPage,
+                    page: page,
+                    person_titles: [
+                        "software engineering manager",
+                        "software engineering director",
+                        "software engineering lead",
+                        "Engineering Director",
+                        "Technical Director",
+                        "Development Director",
+                        "IT Director",
+                        "Engineering Team Lead",
+                        "Development Team Lead",
+                        "Technical Team Lead",
+                        "Engineering Manager",
+                        "Technical Manager",
+                        "VP of Engineering",
+                        "VP of Technology",
+                        "Head of Engineering",
+                        "Head of Technology",
+                        "Director of Engineering",
+                        "Director of Technology",
+                        "CEO",
+                        "CTO",
+                        "Technical Recruiter",
+                        "Human Resources",
+                    ],
+                }),
+            });
+
+            if (!response.ok) {
+                console.error("Error fetching more people data:", response);
+                console.log("companyIds:", companyIds);
+                break;
+            }
+
+            const data = await response.json();
+            console.log("Appolo All People Response:", data.people.length);
+            console.log("page:", page);
+            console.log("totalPages:", totalPages);
+            allPeople = allPeople.concat(data.people);
+            totalPages = data.pagination.total_pages;
+            page++;
+        }
+        console.log("found people:", allPeople.length);
+        const cleanPeople = allPeople.map((person: any) => {
+            person = Object.keys(person).reduce((acc:any, key) => {
+                if (validPersonKeys.includes(key)) {
+                    acc[key] = person[key];
+                }
+                delete acc["organization"];
+                return acc;
+            }, {} as Person);
+            return person;
+        });
+
+        const uniqueCleanPeople = cleanPeople.reduce((acc: Person[], current: Person) => {
+            if (!acc.some((person) => person.id === current.id)) {
+                acc.push(current);
+            }
+            return acc;
+        }, []);
+
+        const dbResponse = await supabaseAdmin
+            .from("people")
+            .upsert(uniqueCleanPeople, {onConflict: "id"})
+            .select("*");
+        await supabaseAdmin
+            .from("organizations")
+            .update({fetched_people: true})
+            .in("id", companyIds);
+        if (dbResponse.error) {
+            throw dbResponse.error;
+        }
+        const people = dbResponse.data;
+        console.log("More People saved:", dbResponse.data.length);
+        return people;
+    } catch (e) {
+        console.error("Failed to get company people:", e);
+        return [];
+    }
+};
+
+export const addLocation = onCall({timeoutSeconds: 900, memory: "4GiB"}, async (request: any) => {
     const {location, userId} = request.data;
     console.log("Location: ", location);
     console.log("user: ", userId);
@@ -126,7 +243,8 @@ export const addLocation = onCall(async (request: any) => {
         console.log("API Location:", apiLocation);
         const perPage = 100;
         let totalPages = startingPage + 1;
-        while (currentPage <= (10 + startingPage) && currentPage <= totalPages) {
+        const newCompanies = new Set<string>([]);
+        while ((currentPage <= (20 + startingPage)) && (currentPage <= totalPages) && (newCompanies.size < 200)) {
             const response = await fetch("https://api.apollo.io/v1/mixed_people/search", {
                 method: "POST",
                 headers: {
@@ -144,13 +262,12 @@ export const addLocation = onCall(async (request: any) => {
                         "software engineer",
                     ],
                     organization_num_employees_ranges: ["5,5000"],
-                    person_locations: location.formatted_address,
+                    person_locations: apiLocation,
                 }),
             });
 
 
             const data = await response.json();
-            console.log("Data:", data);
             if (response.ok) {
                 allPeople = allPeople.concat(data.people);
                 totalPages = data.pagination.total_pages;
@@ -159,6 +276,14 @@ export const addLocation = onCall(async (request: any) => {
                 console.error("Error fetching data:", data);
                 break;
             }
+            data.people.forEach((person: { organization?: { id: string } }) => {
+                if (person.organization?.id) {
+                    newCompanies.add(person.organization.id);
+                }
+            });
+        }
+        if (currentPage >= totalPages) {
+            currentPage = 0;
         }
         updateLocation({...newLocation, page: currentPage});
         // Deduplicate allPeople based on id
@@ -170,8 +295,7 @@ export const addLocation = onCall(async (request: any) => {
         }, []);
         allPeople = allPeople.map((person:any) => {
             if (person.organization &&
-                !allOrgs.find((org) => org.id === person.organization.id) &&
-                !allOrgs.find((org) => org.website_url === person.organization.website_url)
+                !allOrgs.find((org) => org.id === person.organization.id)
             ) {
                 if (person.organization.website_url) {
                     allOrgWebsites[person.organization.website_url] = true;
@@ -185,6 +309,7 @@ export const addLocation = onCall(async (request: any) => {
             cleanedPerson.locationId = newLocation.id;
             return cleanedPerson;
         });
+        console.log("All cleaned people:", allPeople.length);
         const allUrls = Object.keys(allOrgWebsites);
         const peopleLabsData = [] as any;
         for (let i = 0; i < allUrls.length; i += 100) {
@@ -192,14 +317,14 @@ export const addLocation = onCall(async (request: any) => {
             const data = await getPeopleLabsData(urls);
             peopleLabsData.push(...data);
         }
-        console.log("PeopleLabs data:", peopleLabsData);
+        console.log("PeopleLabs data:", peopleLabsData.length);
         const allOrganizations = allOrgs.map((org: any) => {
             const cleanedOrg = {} as any;
             for (const key of validOrganizationKeys) {
                 cleanedOrg[key] = org[key];
             }
             const peopleLabsOrg = peopleLabsData.find((p: any) => p.website === cleanedOrg.website_url);
-            console.log("PeopleLabs org:", peopleLabsOrg);
+
             cleanedOrg.hires_in = [newLocation.id];
             cleanedOrg.sanitized_phone = org.sanitized_phone;
             if (peopleLabsOrg) {
@@ -213,9 +338,11 @@ export const addLocation = onCall(async (request: any) => {
             }
             return cleanedOrg;
         });
+        const allNewPeople = await getCompanyPeople(allOrganizations.map((org: any) => org.id));
+        console.log("All new people:", allNewPeople.length);
         const enqueueResult = await enqueueScrapingTasks(allUrls);
         console.log("Enqueue result:", enqueueResult);
-        console.log("Organizations found:", allOrganizations);
+        console.log("Organizations found:", allOrganizations.length);
         await saveOrganizations(allOrganizations);
         await savePeople(allPeople);
         console.log("People found:", allPeople.length);

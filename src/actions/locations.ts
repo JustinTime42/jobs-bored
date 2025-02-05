@@ -10,7 +10,7 @@ export const addLocation = async (location: google.maps.places.PlaceResult, user
         
         console.log("location", location)
         console.log("userId", userId)
-        await addLocation({location, userId});
+        addLocation({location, userId});
         return location;   
     }
     catch (e) {
@@ -18,8 +18,33 @@ export const addLocation = async (location: google.maps.places.PlaceResult, user
     }
 } 
 
+export const populateOrganizations = async () => {
+
+    const populateOrganizations = httpsCallable(functions, 'populateOrganizations');
+    const { data, error } = await supabaseAdmin
+    .from('organizations')
+    .select('*')
+    .is('fetched_people', false)
+    .gt('size', 0)
+    .lt('size', 5)
+    .not('website_url', 'is', null)
+    .limit(500);
+    if (error) {
+        throw error;
+    }
+    console.log("Organizations to fetch people for: ", data);
+
+
+
+    const results = await populateOrganizations({organizationIds: data.map((org: any) => org.id)});
+    console.log(results);
+    return results;
+
+}
+
 // moved all the below to firebase functions
 export const saveLocation = async (location: google.maps.places.PlaceResult, userId: string ) => {
+
     const locationDetails = {
         locality: location.address_components
             ?.find((component: any) => component.types.includes("locality"))

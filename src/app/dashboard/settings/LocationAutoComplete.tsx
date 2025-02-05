@@ -4,16 +4,24 @@ import usePlacesAutocomplete, { getGeocode, getLatLng, Suggestion, getDetails, D
 import styles from './LocationAutoComplete.module.css';
 import { LocationAutoCompleteProps } from '@/src/definitions';
 
-const LocationAutoComplete: React.FC<LocationAutoCompleteProps> = ({ onSelectLocation }) => {
+const LocationAutoComplete: React.FC<LocationAutoCompleteProps> = ({ onSelectLocation, shouldClearInput }) => {
 
     const { ready, value, suggestions: { status, data }, setValue, clearSuggestions } = usePlacesAutocomplete({
         requestOptions: {
             types: ['(cities)'],
         },
     });
+
+    useEffect(() => {
+        if (shouldClearInput) {
+            clearSuggestions();
+            setValue('', false);
+        }
+    }, [shouldClearInput]);
     
     const handleSelect = async (suggestion: Suggestion) => {
         const details: google.maps.places.PlaceResult | string = await getDetails({
+
             placeId: suggestion.place_id,
             fields: ['address_components', 'formatted_address', 'name','adr_address', 'place_id']
           });
@@ -35,6 +43,8 @@ const LocationAutoComplete: React.FC<LocationAutoCompleteProps> = ({ onSelectLoc
             console.error('Error:', error);
         }
     };
+
+    
 
     return (
         <div>

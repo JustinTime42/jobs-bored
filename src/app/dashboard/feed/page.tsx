@@ -150,6 +150,7 @@ const Feed = () => {
                     submitQuery={() => handleFetch(filters)}
                 />
             </div>
+            {organizations.length === 0 && <p>We're still building your feed. Please refresh the page in a few minutes.</p>}
             {organizations.map((org, index) => (
                 <Accordion 
                     ref={index === organizations.length - 1 ? lastOrganizationRef : null} 
@@ -183,6 +184,7 @@ const Feed = () => {
                         submitQuery={() => handleFetch(filters)}
                     />
                 </div>
+                {organizations.length === 0 && <p>We're still building your feed. Please refresh the page in a few minutes.</p>}
                 {organizations.map((org, index) => (
                     <div ref={index === organizations.length - 1 ? lastOrganizationRef : null} key={org.id} onClick={() => setActiveOrganization(org)}>
                         <CompanyCard
