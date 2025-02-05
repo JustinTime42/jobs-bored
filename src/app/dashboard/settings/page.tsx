@@ -120,7 +120,7 @@ const UserAccount = () => {
     return (
         <div className={styles.container}>
             <h1 className={styles.title}>Account Management</h1>
-            <AsyncButton asyncAction={populateOrganizations} label="Populate Organizations" />
+            {/* <AsyncButton asyncAction={populateOrganizations} label="Populate Organizations" /> */}
             <div className={styles.info}>
                 <p><strong>Username:</strong> {user.user_name || user.user_metadata?.preferred_username || user.user_metadata?.user_name || 'User'}</p>
                 <p><strong>Email:</strong> {user.email}</p>
