@@ -31,8 +31,8 @@ const UserAccount = () => {
           .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'users_locations' },
-            (payload) => {
-              fetchUser();
+            async (payload) => {
+              await fetchUser();
               setNewLocationLoading(false);
             }
           )
