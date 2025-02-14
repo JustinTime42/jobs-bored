@@ -134,6 +134,7 @@ export const getCompanyPeople = async (companyIds: string[]) => {
                         "Technical Recruiter",
                         "Human Resources",
                     ],
+                    organization_num_employees_ranges: ["11,1000"],
                 }),
             });
 
@@ -261,7 +262,7 @@ export const addLocation = onCall({timeoutSeconds: 900, memory: "4GiB"}, async (
                         "software developer",
                         "software engineer",
                     ],
-                    organization_num_employees_ranges: ["5,5000"],
+                    organization_num_employees_ranges: ["11,1000"],
                     person_locations: apiLocation,
                 }),
             });
@@ -338,6 +339,8 @@ export const addLocation = onCall({timeoutSeconds: 900, memory: "4GiB"}, async (
             }
             return cleanedOrg;
         });
+        console.log("All organizations:", allOrganizations.map((org: any) => org.id));
+        console.log("All Orgs Length:", allOrganizations.length);
         const allNewPeople = await getCompanyPeople(allOrganizations.map((org: any) => org.id));
         console.log("All new people:", allNewPeople.length);
         const enqueueResult = await enqueueScrapingTasks(allUrls);
