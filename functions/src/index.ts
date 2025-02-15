@@ -192,7 +192,13 @@ export const getCompanyPeople = async (companyIds: string[]) => {
 };
 
 export const addLocation = onCall({timeoutSeconds: 900, memory: "4GiB"}, async (request: any) => {
+    const startMemory = process.memoryUsage();
+    console.log("Starting memory usage:", startMemory);
     const {location, userId} = request.data;
+    console.log("Received data:", {
+        locationData: JSON.stringify(location),
+        userId,
+    });
     console.log("Location: ", location);
     console.log("user: ", userId);
     try {
@@ -349,6 +355,11 @@ export const addLocation = onCall({timeoutSeconds: 900, memory: "4GiB"}, async (
         await saveOrganizations(allOrganizations);
         await savePeople(allPeople);
         console.log("People found:", allPeople.length);
+        const endMemory = process.memoryUsage();
+        console.log("Memory usage delta:", {
+            heapUsed: endMemory.heapUsed - startMemory.heapUsed,
+            rss: endMemory.rss - startMemory.rss,
+        });
         return allPeople;
     } catch (e) {
         console.error("Apollo People", e);

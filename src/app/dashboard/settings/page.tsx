@@ -59,11 +59,13 @@ const UserAccount = () => {
         }
         
         try {
-            await addLocation(newLocation, user.id);           
-            setNewLocation({} as Suggestion);
+            const result = await addLocation(newLocation, user.id); 
+            console.log('result', result) 
         } catch (error) {
             console.error('Error adding location', error);
             throw error
+        } finally {
+            setNewLocation({} as Suggestion);
         }
     };
 
