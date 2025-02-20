@@ -7,7 +7,7 @@
 }
 
 .benefits {
-  background-color: #e0e0e0;
+  background-color: #eaf6ff;
   text-align: center;
   border-radius: 50px;
   margin-top: 50px;
@@ -224,7 +224,7 @@
 }
 
 .footer {
-  background-color: #e0e0e0; /* Dark background for footer */
+  background-color: #eaf6ff; /* Dark background for footer */
   padding: 20px 0; /* Top and bottom padding */
   margin-top: 40px; /* Margin to separate from other sections */
   text-align: center; /* Light text color for contrast */
