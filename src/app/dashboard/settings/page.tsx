@@ -121,6 +121,7 @@ const UserAccount = () => {
     }
  
     return (
+        <div>
         <div className={styles.container}>
             <h1 className={styles.title}>Account Management</h1>
             {/* <AsyncButton asyncAction={populateOrganizations} label="Populate Organizations" /> */}
@@ -155,6 +156,10 @@ const UserAccount = () => {
                         }
                     <AsyncButton asyncAction={handleAddLocation} label="Add Location" />
                 </div>
+            </div>
+        </div>
+        <div className={styles.videoContainer}>
+                <video className={styles.video} width="100%" src="https://xt8tecpsdo3psbjx.public.blob.vercel-storage.com/tutorial-xAKWu7jLxj4vHKDlPpCVVEVYzZmsDg" controls/>
             </div>
         </div>
 

@@ -1,5 +1,5 @@
 .container {
-  max-width: 800px;
+  max-width: 500px;
   margin: 0 auto;
   padding: 20px;
   background-color: #f9f9f9;
@@ -68,4 +68,14 @@
 
 .locations li {
   margin: 5px 0;
+}
+
+.video {
+  border-radius: 10px; /* Rounded corners for the video itself */
+  margin-top: 48px;
+}
+
+.videoContainer {
+  width: 600px;
+  margin: 48px;
 }

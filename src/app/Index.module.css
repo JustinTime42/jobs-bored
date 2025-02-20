@@ -49,6 +49,10 @@
   border-radius: 50%;
 }
 
+.video {
+  border-radius: 10px; /* Rounded corners for the video itself */
+}
+
 #demoSection {
   text-align: center;
   margin-top: 50px;
@@ -91,6 +95,19 @@
   .aboutText {
     margin: 20px;
   }
+  .mentorSection {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .funkyBorder {
+    border: none; /* Rounded corners for the video itself */
+  }
+  .videoContainer {
+    width: 100%;
+    margin: 48px;
+  }
 }
 
 @media only screen and (min-width: 576px) {
@@ -131,6 +148,16 @@
     width: 50%;
     margin: 0 auto;
   }
+  .mentorSection {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .videoContainer {
+    width: 60%;
+    margin-top: 48px;
+  }
 }
 
 @media only screen and (min-width: 992px) {
@@ -162,6 +189,13 @@
     overflow: hidden;
     max-width: 400px;
   }
+
+  .videoContainer {
+    display: inline-block; /* To fit the border around the video */
+    padding: 10px; /* Space between the border and video */
+    width: 800px;
+    margin-top: 48px;
+  }
   .heroCard {
     width: 40%;
   }
@@ -169,11 +203,17 @@
     width: 50%;
     margin: 0 auto;
   }
+  .mentorSection {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .mentorship {
   padding: 20px; /* Padding around the content */
-  margin: 40px 0; /* Margin to separate from other sections */
+  margin: 64px; /* Margin to separate from other sections */
   text-align: center; /* Center-align text for emphasis */
 }
 

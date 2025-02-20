@@ -29,17 +29,15 @@ export const populateOrganizations = async () => {
     const { data, error } = await supabaseAdmin
     .from('organizations')
     .select('*')
-    .is('fetched_people', false)
+    .eq('fetched_people', false)
     .gt('size', 0)
     .lt('size', 5)
     .not('website_url', 'is', null)
     .limit(500);
+    console.log("Number of companies selected:", data?.length);
     if (error) {
         throw error;
     }
-    console.log("Organizations to fetch people for: ", data);
-
-
 
     const results = await populateOrganizations({organizationIds: data.map((org: any) => org.id)});
     console.log(results);

@@ -47,18 +47,23 @@ export default function Index() {
         </div>
       </div>
 
-      <section className={styles.mentorship}>
+      <section className={styles.mentorSection}>
+        <div className={styles.videoContainer}>
+          <video className={styles.video} width="100%" src="https://xt8tecpsdo3psbjx.public.blob.vercel-storage.com/intro-TM9DpnvRCM6lrscoSs8W5cHfXMZpYK" autoPlay controls/>
+        </div>
+
+        <div className={styles.mentorship}>
         <h2><School /> Maximize Your Potential with Expert Guidance</h2>
         <p>We've partnered with         
             <a href="https://crushing.digital/" className={styles.mentorLink}>
                 Crushing Digital
             </a> 
             to provide you with the skills needed to truly stand out. Learn how to showcase your value effectively with practical tips directly tied to our system.</p>
-
+        </div>
       </section>
 
       <footer className={styles.footer}>
-        <small>© 2024 Jobs Bored. All rights reserved.</small>
+        <small>© 2025 Jobs Bored. All rights reserved.</small>
       </footer>
     </div>
   );
