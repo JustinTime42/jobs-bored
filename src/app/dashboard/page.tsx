@@ -7,7 +7,6 @@ export type orgType = {
     details: Organization;
 }[]
 const Dashboard = () => {
-
     return (
         <div className={styles.container}>           
     
