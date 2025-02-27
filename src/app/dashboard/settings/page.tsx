@@ -52,14 +52,14 @@ const UserAccount = () => {
             setNewLocationLoading(false);
             return;
         }
-        if (user?.locations.some((i:LocationType)=>i.formatted_address === newLocation.formatted_address)) {
+        if (user && user.locations && user.locations.some((i:LocationType)=>i.formatted_address === newLocation.formatted_address)) {
             alert('Location already exists');
             setNewLocationLoading(false);
             return;
         }
         
         try {
-            const result = await addLocation(newLocation, user.id); 
+            const result = await addLocation(newLocation, user?.id); 
             console.log('result', result) 
         } catch (error) {
             console.error('Error adding location', error);

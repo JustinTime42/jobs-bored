@@ -338,9 +338,9 @@ export const addLocation = onCall({timeoutSeconds: 900, memory: "4GiB"}, async (
                 cleanedOrg.industry = peopleLabsOrg.industry;
                 cleanedOrg.size = peopleLabsOrg.size;
                 cleanedOrg.founded_year = cleanedOrg.founded_year || peopleLabsOrg.founded_year;
-                cleanedOrg.locality = peopleLabsOrg.locality;
-                cleanedOrg.region = peopleLabsOrg.region;
-                cleanedOrg.country = peopleLabsOrg.country;
+                cleanedOrg.locality = peopleLabsOrg.locality || location.locality;
+                cleanedOrg.region = peopleLabsOrg.region || location.region;
+                cleanedOrg.country = peopleLabsOrg.country || location.country;
                 cleanedOrg.linkedin_url = cleanedOrg.linkedin_url || peopleLabsOrg.linkedin_url;
             }
             return cleanedOrg;

@@ -63,14 +63,22 @@ async function createNewUser(supabase: any, user: User) {
         avatar_url: user.user_metadata.avatar_url || undefined,
         stripe_customer_id: customer.id,
         trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        subscription_status: 'trial',
-    }).select().single();
+        subscription_status: 'trial'
+    }).select(`
+        *,
+        users_locations (
+            locations(*)
+        )
+    `).single();
 
     if (error) {
         throw new Error('Failed to create new user: ' + error.message);
     }
 
-    return data as User;
+    return {
+        ...data,
+        locations: data.users_locations?.map((loc: any) => loc.locations) || []
+    } as User;
 }
 
 
