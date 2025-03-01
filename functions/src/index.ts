@@ -248,7 +248,11 @@ export const addLocation = onCall({timeoutSeconds: 900, memory: "4GiB"}, async (
         }
         const {error} = await supabaseAdmin
             .from("users_locations")
-            .insert([{user_id: userId, location_id: newLocation.id}]);
+            .insert([{
+                user_id: userId,
+                location_id: newLocation.id,
+                localized_formatted_address: location.formatted_address,
+            }]);
         if (error) {
             throw error;
         }
@@ -431,10 +435,8 @@ export const savePeople = async (people: any[]) => {
 };
 
 export const convertPlaceToLocation = (place: any) => {
-    // If English fields are provided, use them for database storage
     const addressComponents = place.english_address_components || place.address_components;
     const formattedAddress = place.english_formatted_address || place.formatted_address;
-
     return {
         locality: addressComponents
             ?.find((component: any) => component.types.includes("locality"))
@@ -449,8 +451,6 @@ export const convertPlaceToLocation = (place: any) => {
             ?.find((component: any) => component.types.includes("country"))
             ?.long_name?.toLowerCase(),
         formatted_address: formattedAddress?.toLowerCase(),
-        // Store the localized formatted address for display purposes
-        localized_formatted_address: place.formatted_address?.toLowerCase(),
     };
 };
 

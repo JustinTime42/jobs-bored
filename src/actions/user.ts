@@ -17,6 +17,8 @@ export const getUserDetails = async (user: User) => {
     .select(`
         *,
         users_locations (
+            location_id,
+            localized_formatted_address,
             locations(*)
         )
     `)
@@ -40,7 +42,10 @@ export const getUserDetails = async (user: User) => {
     }
     const userData = {
         ...data,
-        locations: data.users_locations?.map((loc: any) => loc.locations) || [],
+        locations: data.users_locations?.map((loc: any) => ({
+            ...loc.locations,
+            localized_formatted_address: loc.localized_formatted_address || loc.locations.formatted_address
+        })) || [],
     };
 
     return userData as User;

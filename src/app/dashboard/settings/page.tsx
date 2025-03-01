@@ -69,10 +69,9 @@ const UserAccount = () => {
             const locationData = {
                 // For display to the user
                 address_components: newLocation.address_components,
-                formatted_address: newLocation.formatted_address,
-                // For database storage (standardized in English)
-                english_address_components: newLocation.english_address_components,
-                english_formatted_address: newLocation.english_formatted_address
+                formatted_address: newLocation.english_formatted_address, // Use English for database storage
+                // For localized display
+                localized_formatted_address: newLocation.formatted_address // Store localized version
             };
             
             const result = await addLocation(locationData, user?.id); 
@@ -206,7 +205,7 @@ const UserAccount = () => {
                     </div>
                 </div>
                 <p className={styles.juniorDescription}>
-                    As a junior developer, we'll highlight companies that are known to hire entry-level talent and have junior positions available.
+                    We'll try to show you companies that we believe hire junior developers.
                 </p>
             </div>
 

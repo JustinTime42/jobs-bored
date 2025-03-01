@@ -1,7 +1,10 @@
 CREATE OR REPLACE FUNCTION get_organizations_with_filters_and_scores(
   location_ids UUID[],
   user_param_id UUID DEFAULT NULL,
-  filter_locality TEXT[] DEFAULT NULL
+  filter_locality TEXT[] DEFAULT NULL,
+  page_size INTEGER DEFAULT 20,
+  previous_score INTEGER DEFAULT NULL,
+  previous_id TEXT DEFAULT NULL
 )
 RETURNS TABLE (
   id TEXT,
@@ -18,6 +21,7 @@ RETURNS TABLE (
   unreachable_url BOOLEAN,
   fetched_people BOOLEAN,
   logo_url TEXT,
+  hires_juniors BOOLEAN,
   score INTEGER
 ) AS $$
 BEGIN
@@ -31,6 +35,11 @@ BEGIN
     SELECT organization_id
     FROM user_organizations 
     WHERE user_id = user_param_id
+  ),
+  user_info AS (
+    SELECT COALESCE(is_junior, false) as is_junior
+    FROM users
+    WHERE users.id = user_param_id
   )
   SELECT
     o.id,
@@ -47,6 +56,7 @@ BEGIN
     o.unreachable_url,
     o.fetched_people,
     o.logo_url,
+    o.hires_juniors,
     (
       -- Size Score
       (CASE 
@@ -61,14 +71,7 @@ BEGIN
             FROM user_locations ul
             WHERE 
               -- Locality Match
-              (o.locality IS NOT NULL AND ul.locality IS NOT NULL AND o.locality = ul.locality) AND
-              -- Region Match (admin_area_lvl1 or admin_area_lvl2)
-              (
-                (o.region IS NOT NULL AND ul.admin_area_level_1 IS NOT NULL AND o.region = ul.admin_area_level_1) OR
-                (o.region IS NOT NULL AND ul.admin_area_level_2 IS NOT NULL AND o.region = ul.admin_area_level_2)
-              ) AND
-              -- Country Match
-              (o.country IS NOT NULL AND ul.country IS NOT NULL AND o.country = ul.country)
+              (o.locality IS NOT NULL AND ul.locality IS NOT NULL AND o.locality = ul.locality)
           )
           THEN 1
           ELSE 0
@@ -78,14 +81,52 @@ BEGIN
           WHEN o.website_url IS NOT NULL
           THEN 1
           ELSE 0
+      END) +
+      -- Hires Juniors Score (only if user is junior)
+      (CASE
+          WHEN (SELECT is_junior FROM user_info) = true AND o.hires_juniors = true THEN 1 ELSE 0
       END)
     ) AS score
   FROM organizations o
   LEFT JOIN user_favorites uf ON o.id = uf.organization_id
   WHERE 
     o.hires_in && location_ids
-    AND (user_param_id IS NULL OR uf.organization_id IS NOT NULL)  -- Filter for favorites if user_id is provided
-    AND (filter_locality IS NULL OR o.locality ILIKE ANY(filter_locality))  -- Filter for locality (city)
-  ORDER BY score DESC;
+    AND (user_param_id IS NULL OR uf.organization_id IS NOT NULL)
+    AND (  
+      filter_locality IS NULL OR 
+      (filter_locality <> '{}' AND o.locality ILIKE ANY(filter_locality)))
+    AND (
+      previous_score IS NULL OR
+      (
+        (
+          (CASE WHEN o.size > 0 AND o.size < 5 THEN 1 ELSE 0 END) +
+          (CASE
+              WHEN EXISTS (
+                SELECT 1
+                FROM user_locations ul
+                WHERE 
+                  (o.locality IS NOT NULL AND ul.locality IS NOT NULL AND o.locality = ul.locality)
+              )
+              THEN 1 ELSE 0 END) +
+          (CASE WHEN o.website_url IS NOT NULL THEN 1 ELSE 0 END) +
+          (CASE WHEN (SELECT is_junior FROM user_info) = true AND o.hires_juniors = true THEN 1 ELSE 0 END)
+        ) < previous_score OR 
+        (
+          (CASE WHEN o.size > 0 AND o.size < 5 THEN 1 ELSE 0 END) +
+          (CASE
+              WHEN EXISTS (
+                SELECT 1
+                FROM user_locations ul
+                WHERE 
+                  (o.locality IS NOT NULL AND ul.locality IS NOT NULL AND o.locality = ul.locality)
+              )
+              THEN 1 ELSE 0 END) +
+          (CASE WHEN o.website_url IS NOT NULL THEN 1 ELSE 0 END) +
+          (CASE WHEN (SELECT is_junior FROM user_info) = true AND o.hires_juniors = true THEN 1 ELSE 0 END)
+        ) = previous_score AND o.id > previous_id
+      )
+    )
+  ORDER BY score DESC, o.id ASC
+  LIMIT page_size;
 END;
 $$ LANGUAGE plpgsql;

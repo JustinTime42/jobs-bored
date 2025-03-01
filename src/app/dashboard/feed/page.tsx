@@ -17,6 +17,7 @@ import { fetchMoreOrganizations, fetchOrganizations } from "./utils";
 const initialFilters = {
     localities: [] as string[] | null,
     userId: null,
+    favoritesOnly: false,
     page_size:20,
     previous_score: null,
     previous_id: null
@@ -26,7 +27,7 @@ const Feed = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const observer = useRef<IntersectionObserver | null>(null);
     const { user, loading: userLoading, error: userError } = useUserContext();
-    const [filters, setFilters] = useState({...initialFilters, localities: user?.locations.map((l: any) => l.locality) || []});
+    const [filters, setFilters] = useState({...initialFilters, localities: user?.locations.map((l: any) => l.locality) || [], userId: user?.id});
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [activeOrganization, setActiveOrganization] = useState<Organization | undefined>(undefined);
     const [orgLoading, setOrgLoading] = useState(false);
@@ -46,7 +47,22 @@ const Feed = () => {
 
     useEffect(() => {
         if (user) {
-            handleFetch(filters);
+            console.log('User object in Feed:', {
+                id: user.id,
+                is_junior: user.is_junior,
+                locations: user.locations?.map((l: any) => ({ id: l.id, locality: l.locality }))
+            });
+            
+            setFilters(prev => ({
+                ...prev,
+                localities: user?.locations.map((l: any) => l.locality) || [],
+                userId: user.id
+            }));
+            handleFetch({
+                ...filters,
+                localities: user?.locations.map((l: any) => l.locality) || [],
+                userId: user.id
+            });
         }
     }, [user, userLoading]);
 
@@ -102,7 +118,7 @@ const Feed = () => {
     }   
 
     const toggleFavorites = () => {
-        setFilters((prev) => ({ ...prev, userId: prev.userId ? null : user.id }));
+        setFilters((prev) => ({ ...prev, favoritesOnly: !prev.favoritesOnly }));
     };
 
     const toggleLocality = (locality: string) => {

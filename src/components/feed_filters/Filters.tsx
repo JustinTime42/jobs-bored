@@ -14,6 +14,7 @@ export type FiltersState = {
     page_size: number;
     previous_score: number | null;
     previous_id: string | null;
+    favoritesOnly: boolean | null;
 };
 
 type FiltersProps = {
@@ -50,7 +51,7 @@ const Filters = ({userLocations, filters, toggleFavorites, toggleLocality, submi
             <AccordionDetails>
                 <FormGroup>
                     <FormControlLabel
-                        control={<Checkbox checked={!!filters.userId} onChange={toggleFavorites} />}
+                        control={<Checkbox checked={!!filters.favoritesOnly} onChange={toggleFavorites} />}
                         label="Favorites Only"
                     />
                     {/* {userLocations?.map((location) => (

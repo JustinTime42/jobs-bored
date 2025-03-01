@@ -8,9 +8,12 @@ type LocationProps = {
 };
 
 const Location = ({location, handleRemoveLocation}: LocationProps) => {
+    // Use localized_formatted_address if available, otherwise fall back to formatted_address
+    const displayAddress = location.localized_formatted_address || location.formatted_address;
+    
     return (
         <div className={styles.location}>
-            <li>{location.formatted_address}</li>
+            <li>{displayAddress}</li>
             <button className={styles.removeButton} onClick={() => handleRemoveLocation(location)}><CloseIcon /></button>
         </div>
     );

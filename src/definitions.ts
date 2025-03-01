@@ -161,6 +161,7 @@ export type UserDetails = {
         admin_area_level_2: string;
         country: string;
         page: number;
+        localized_formatted_address?: string;
     }[];
 }
   
@@ -175,13 +176,14 @@ export type UserDetails = {
 }
 
 
-export type Location = {
-  id: string;
-  created_at: string;
-  locality?: string;
-  country?: string;
-  formatted_address?: string;
-  page?: number;
-  admin_area_level_1?: string;
-  admin_area_level_2?: string;
+export interface Location {
+    id: string;
+    created_at: string;
+    locality?: string;
+    country?: string;
+    formatted_address?: string;
+    localized_formatted_address?: string;
+    page?: number;
+    admin_area_level_1?: string;
+    admin_area_level_2?: string;
 }

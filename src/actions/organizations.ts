@@ -19,22 +19,117 @@ export const saveOrganizations = async (organizations: any[]) => {
     }
 };
 
-export const getLocalOrganizations = async (locations: string[] | null, userId: string | null, localities: string[] | null, page_size: number, previous_score: number | null, previous_id: string | null) => {
+export const getLocalOrganizations = async (
+    locations: string[] | null, 
+    userId: string | null, 
+    localities: string[] | null, 
+    page_size: number, 
+    previous_score: number | null, 
+    previous_id: string | null,
+    favoritesOnly: boolean = false
+) => {
+    if (!userId) throw new Error('User ID is required');
     
-    const { data, error } = await supabaseAdmin
-    .rpc('get_organizations_with_filters_and_scores', {
-        location_ids: locations,
-        user_param_id: userId,
-        filter_locality: localities?.length === 0 ? null : localities,
-        page_size: page_size,
-        previous_score: previous_score,
-        previous_id: previous_id
-      });   
-    if (error) {
-        console.error('Error fetching organizations:', error);
-        throw error;
+    console.log('getLocalOrganizations params:', {
+        locations,
+        userId,
+        localities,
+        page_size,
+        previous_score,
+        previous_id,
+        favoritesOnly
+    });
+    
+    // Try a simpler query first to check if organizations exist
+    const { data: orgCheck, error: orgCheckError } = await supabaseAdmin
+        .from('organizations')
+        .select('id, hires_in')
+        .limit(5);
+        
+    console.log('Organization check:', {
+        orgs: orgCheck,
+        error: orgCheckError?.message || null
+    });
+    
+    // Check if any organizations match the location_ids
+    if (locations && locations.length > 0) {
+        const { data: orgLocCheck, error: orgLocCheckError } = await supabaseAdmin
+            .from('organizations')
+            .select('id, name, hires_in')
+            .overlaps('hires_in', locations)
+            .limit(5);
+            
+        console.log('Organizations with matching locations:', {
+            orgs: orgLocCheck,
+            error: orgLocCheckError?.message || null
+        });
     }
-    return data;
+    
+    // Check if the location exists
+    if (locations && locations.length > 0) {
+        const { data: locCheck, error: locCheckError } = await supabaseAdmin
+            .from('locations')
+            .select('id, locality')
+            .in('id', locations)
+            .limit(10);
+            
+        console.log('Location check:', {
+            locations: locCheck,
+            error: locCheckError?.message || null
+        });
+    }
+    
+    // Check if the user exists
+    const { data: userCheck, error: userCheckError } = await supabaseAdmin
+        .from('users')
+        .select('id, is_junior')
+        .eq('id', userId)
+        .single();
+        
+    console.log('User check:', {
+        user: userCheck,
+        error: userCheckError?.message || null
+    });
+    
+    // Check if the user has any favorites
+    const { data: favCheck, error: favCheckError } = await supabaseAdmin
+        .from('user_organizations')
+        .select('organization_id')
+        .eq('user_id', userId)
+        .limit(5);
+        
+    console.log('User favorites check:', {
+        favorites: favCheck,
+        error: favCheckError?.message || null
+    });
+    
+    // Now try a simpler version of the RPC call
+    try {
+        const { data, error } = await supabaseAdmin
+        .rpc('get_organizations_with_filters_and_scores', {
+            location_ids: locations,
+            user_param_id: userId,
+            filter_locality: localities?.length === 0 ? null : localities,
+            page_size: page_size,
+            previous_score: previous_score,
+            previous_id: previous_id,
+            favorites_only: favoritesOnly
+          });   
+        
+        console.log('getLocalOrganizations result:', {
+            dataLength: data?.length || 0,
+            error: error?.message || null
+        });
+        
+        if (error) {
+            console.error('Error fetching organizations:', error);
+            throw error;
+        }
+        return data;
+    } catch (e) {
+        console.error('Exception in getLocalOrganizations:', e);
+        throw e;
+    }
 };
 
 export const getCompanyDetails = async (orgId: string, userId: string) => {
