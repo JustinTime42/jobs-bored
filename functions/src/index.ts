@@ -1,4 +1,3 @@
-
 import {onCall, onRequest} from "firebase-functions/v2/https";
 import {Organization, Person} from "./definitions";
 import {createClient} from "@supabase/supabase-js";
@@ -133,6 +132,10 @@ export const getCompanyPeople = async (companyIds: string[]) => {
                         "CTO",
                         "Technical Recruiter",
                         "Human Resources",
+                        "Junior Software Engineer",
+                        "Junior Developer",
+                        "Entry Level Software Engineer",
+                        "Entry Level Developer",
                     ],
                     organization_num_employees_ranges: ["11,1000"],
                 }),
@@ -171,6 +174,19 @@ export const getCompanyPeople = async (companyIds: string[]) => {
             return acc;
         }, []);
 
+        const juniorPeople = uniqueCleanPeople.filter((person: Person) => {
+            const title = person.title?.toLowerCase() || "";
+            const headline = person.headline?.toLowerCase() || "";
+            return title.includes("junior") || headline.includes("junior") ||
+                title.includes("entry") || headline.includes("entry");
+        });
+        const juniorCompanyIds = juniorPeople.reduce((acc: string[], current: Person) => {
+            if (!acc.includes(current.organization_id) && current.organization_id) {
+                acc.push(current.organization_id);
+            }
+            return acc;
+        }, [] as string[]);
+
         const dbResponse = await supabaseAdmin
             .from("people")
             .upsert(uniqueCleanPeople, {onConflict: "id"})
@@ -179,6 +195,10 @@ export const getCompanyPeople = async (companyIds: string[]) => {
             .from("organizations")
             .update({fetched_people: true})
             .in("id", companyIds);
+        await supabaseAdmin
+            .from("organizations")
+            .update({hires_juniors: true})
+            .in("id", juniorCompanyIds);
         if (dbResponse.error) {
             throw dbResponse.error;
         }
@@ -411,22 +431,29 @@ export const savePeople = async (people: any[]) => {
 };
 
 export const convertPlaceToLocation = (place: any) => {
+    // If English fields are provided, use them for database storage
+    const addressComponents = place.english_address_components || place.address_components;
+    const formattedAddress = place.english_formatted_address || place.formatted_address;
+
     return {
-        locality: place.address_components
+        locality: addressComponents
             ?.find((component: any) => component.types.includes("locality"))
-            ?.long_name,
-        admin_area_level_1: place.address_components
+            ?.long_name?.toLowerCase(),
+        admin_area_level_1: addressComponents
             ?.find((component: any) => component.types.includes("administrative_area_level_1"))
-            ?.long_name,
-        admin_area_level_2: place.address_components
+            ?.long_name?.toLowerCase(),
+        admin_area_level_2: addressComponents
             ?.find((component: any) => component.types.includes("administrative_area_level_2"))
-            ?.long_name,
-        country: place.address_components
+            ?.long_name?.toLowerCase(),
+        country: addressComponents
             ?.find((component: any) => component.types.includes("country"))
-            ?.long_name,
-        formatted_address: place.formatted_address,
+            ?.long_name?.toLowerCase(),
+        formatted_address: formattedAddress?.toLowerCase(),
+        // Store the localized formatted address for display purposes
+        localized_formatted_address: place.formatted_address?.toLowerCase(),
     };
 };
+
 export const updateLocation = async (location: any) => {
     const supabaseAdmin = createAdminClient();
     try {
@@ -704,11 +731,9 @@ export const emailScraper = onRequest({timeoutSeconds: 400, memory: "4GiB"}, asy
         }
 
         res.status(200).send("Email Scraping Completed Successfully");
-        return;
     } catch (e) {
         console.error("Error scraping emails:", e);
         res.status(500).send("Internal Server Error");
-        return;
     }
 });
 

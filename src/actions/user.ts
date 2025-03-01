@@ -63,7 +63,8 @@ async function createNewUser(supabase: any, user: User) {
         avatar_url: user.user_metadata.avatar_url || undefined,
         stripe_customer_id: customer.id,
         trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        subscription_status: 'trial'
+        subscription_status: 'trial',
+        is_junior: false
     }).select(`
         *,
         users_locations (
@@ -91,4 +92,16 @@ export const updateUserDetails = async (user: any) => {
         .single();
     if (error) throw error;
     return user;
+}
+
+export const toggleJuniorStatus = async (userId: string, isJunior: boolean) => {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from("users")
+        .update({ is_junior: isJunior })
+        .eq("id", userId)
+        .select();
+    
+    if (error) throw error;
+    return data;
 }

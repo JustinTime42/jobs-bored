@@ -13,6 +13,7 @@ import styles from './page.module.css';
 import Button from '@/src/components/button/Button';
 import { handleNewSubscription, handlePortalSession } from '@/src/actions/stripe';
 import { createClient } from '@/src/utils/supabase/client';
+import { toggleJuniorStatus } from '@/src/actions/user';
 import type { Location as LocationType }  from '@/src/definitions';
 
 
@@ -20,6 +21,8 @@ const UserAccount = () => {
     const { user, loading, error, isInitialized, fetchUser } = useUserContext();
     const [newLocation, setNewLocation] = useState<any>({});
     const [newLocationLoading, setNewLocationLoading] = useState(false);
+    const [isJuniorLoading, setIsJuniorLoading] = useState(false);
+    const [showJuniorTooltip, setShowJuniorTooltip] = useState(false);
     const router = useRouter();
     const scriptLoaded = useLoadScript(`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_PLACES_KEY}&libraries=places`);
     const supabase = createClient();
@@ -46,12 +49,15 @@ const UserAccount = () => {
     const handleAddLocation = async () => {
         setNewLocationLoading(true);
         console.log(newLocation)
+        // Check for locality in the localized version for display validation
         const locality = newLocation.address_components?.find((component: any) => component.types.includes('locality'))?.long_name;
         if (!locality) {
             alert('Invalid: You must select a valid city from the dropdown');
             setNewLocationLoading(false);
             return;
         }
+        
+        // Use the localized formatted_address for duplicate check in the UI
         if (user && user.locations && user.locations.some((i:LocationType)=>i.formatted_address === newLocation.formatted_address)) {
             alert('Location already exists');
             setNewLocationLoading(false);
@@ -59,7 +65,17 @@ const UserAccount = () => {
         }
         
         try {
-            const result = await addLocation(newLocation, user?.id); 
+            // Create a location object that includes both localized and English data
+            const locationData = {
+                // For display to the user
+                address_components: newLocation.address_components,
+                formatted_address: newLocation.formatted_address,
+                // For database storage (standardized in English)
+                english_address_components: newLocation.english_address_components,
+                english_formatted_address: newLocation.english_formatted_address
+            };
+            
+            const result = await addLocation(locationData, user?.id); 
             console.log('result', result) 
         } catch (error) {
             console.error('Error adding location', error);
@@ -109,6 +125,20 @@ const UserAccount = () => {
         }        
       };
 
+    const handleJuniorToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!user) return;
+        
+        setIsJuniorLoading(true);
+        try {
+            await toggleJuniorStatus(user.id, e.target.checked);
+            await fetchUser();
+        } catch (error) {
+            console.error('Error updating junior status:', error);
+        } finally {
+            setIsJuniorLoading(false);
+        }
+    };
+
     if (loading) {
         return <p style={{marginTop: "2em"}}>Loading...</p>;
     }
@@ -141,6 +171,43 @@ const UserAccount = () => {
                 {user.subscription_status === 'active' && (
                     <Button className={styles.button} onClick={handleManageSubscription} text="Manage Subscription" />
                 )}
+            </div>
+
+            <div className={styles.juniorSection}>
+                <div className={styles.juniorHeader}>
+                    <div className={styles.juniorTitle}>
+                        Junior Developer Mode
+                        <span 
+                            className={styles.infoIcon} 
+                            onMouseEnter={() => setShowJuniorTooltip(true)}
+                            onMouseLeave={() => setShowJuniorTooltip(false)}
+                        >
+                            ⓘ
+                            {showJuniorTooltip && (
+                                <div className={styles.tooltip}>
+                                    Enabling this will prioritize companies that hire junior developers in your feed.
+                                </div>
+                            )}
+                        </span>
+                    </div>
+                    <div className={styles.toggleContainer}>
+                        <label className={styles.toggleSwitch}>
+                            <input 
+                                type="checkbox" 
+                                checked={user?.is_junior || false}
+                                onChange={handleJuniorToggle}
+                                disabled={isJuniorLoading}
+                            />
+                            <span className={styles.slider}></span>
+                        </label>
+                        <span className={styles.toggleLabel}>
+                            {isJuniorLoading ? 'Updating...' : (user?.is_junior ? 'Enabled' : 'Disabled')}
+                        </span>
+                    </div>
+                </div>
+                <p className={styles.juniorDescription}>
+                    As a junior developer, we'll highlight companies that are known to hire entry-level talent and have junior positions available.
+                </p>
             </div>
 
             <div className={styles.locations}>

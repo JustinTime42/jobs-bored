@@ -20,31 +20,45 @@ const LocationAutoComplete: React.FC<LocationAutoCompleteProps> = ({ onSelectLoc
     }, [shouldClearInput]);
     
     const handleSelect = async (suggestion: Suggestion) => {
-        const details: google.maps.places.PlaceResult | string = await getDetails({
-
+        // First get details in user's locale for display
+        const localizedDetails: google.maps.places.PlaceResult | string = await getDetails({
             placeId: suggestion.place_id,
-            fields: ['address_components', 'formatted_address', 'name','adr_address', 'place_id']
-          });
+            fields: ['address_components', 'formatted_address', 'name', 'adr_address', 'place_id']
+        });
+
+        // Then get the same details but in English for database storage
+        const englishDetails: google.maps.places.PlaceResult | string = await getDetails({
+            placeId: suggestion.place_id,
+            fields: ['address_components', 'formatted_address', 'name', 'adr_address', 'place_id'],
+            language: 'en' // Force English language results
+        });
 
         clearSuggestions();
         
-          console.log("Details", details);
+        console.log("Localized Details", localizedDetails);
+        console.log("English Details", englishDetails);
+        
         try {
-            if (typeof details === 'string') {
-                console.error('Error fetching place details:', details);
-              } else {
+            if (typeof localizedDetails === 'string' || typeof englishDetails === 'string') {
+                console.error('Error fetching place details:', 
+                    typeof localizedDetails === 'string' ? localizedDetails : englishDetails);
+            } else {
+                // Pass both localized and English details to parent
                 onSelectLocation({
-                    address_components: details.address_components,
-                    formatted_address: details.formatted_address,
+                    // For display to user - use localized version
+                    address_components: localizedDetails.address_components,
+                    formatted_address: localizedDetails.formatted_address,
+                    // For database storage - use English version
+                    english_address_components: englishDetails.address_components,
+                    english_formatted_address: englishDetails.formatted_address,
                 });
-                setValue(details.formatted_address || '', false);
+                // Display the localized version in the input
+                setValue(localizedDetails.formatted_address || '', false);
             }
         } catch (error) {
             console.error('Error:', error);
         }
     };
-
-    
 
     return (
         <div>

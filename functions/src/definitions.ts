@@ -115,6 +115,7 @@ export type Person = {
     name: string;
     linkedin_url: string;
     title: string;
+    headline: string;
     photo_url: string;
     twitter_url: string | null;
     github_url: string | null;
@@ -139,6 +140,7 @@ export interface Organization {
     logo_url: string;
     emails: string[];
     fetched_people?: boolean;
+    hires_juniors?: boolean;
     phone: string;
     people?: Person[];
     user_organizations?: any[];
@@ -158,4 +160,3 @@ export type {
     ContactCampaignStatusTally,
     Account,
 };
-

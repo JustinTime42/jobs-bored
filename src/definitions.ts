@@ -45,6 +45,7 @@ export interface EmploymentHistory {
     country: string;
     postal_code: string;
     fetched_people?: boolean;
+    hires_juniors?: boolean;
     size: number;
     locality: string;
     region: string;
@@ -150,6 +151,7 @@ export type UserDetails = {
     stripe_subscription_id: string;
     subscription_status: string;
     trial_ends_at: string;
+    is_junior?: boolean;
     locations: {
         id: string;
         created_at: string;
@@ -166,6 +168,8 @@ export type UserDetails = {
     onSelectLocation: (location: {
         address_components: google.maps.GeocoderAddressComponent[] | undefined;
         formatted_address: string | undefined;
+        english_address_components?: google.maps.GeocoderAddressComponent[] | undefined;
+        english_formatted_address?: string | undefined;
     }) => void;
     shouldClearInput: boolean;
 }

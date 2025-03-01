@@ -1,10 +1,9 @@
-
 'use server'
 import { functions } from "../utils/firebase/firebase";
 import { httpsCallable } from "firebase/functions";
 import { supabaseAdmin } from "../utils/supabase/admin";
 
-export const addLocation = async (location: google.maps.places.PlaceResult, userId: string) => {
+export const addLocation = async (location: any, userId: string) => {
     try{
         const addLocation = httpsCallable(functions, 'addLocation');  
         console.log("Calling Firebase function with:", {
