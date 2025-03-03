@@ -15,7 +15,7 @@ import { handleNewSubscription, handlePortalSession } from '@/src/actions/stripe
 import { createClient } from '@/src/utils/supabase/client';
 import { toggleJuniorStatus } from '@/src/actions/user';
 import type { Location as LocationType }  from '@/src/definitions';
-
+import InfoIcon from '@mui/icons-material/Info';
 
 const UserAccount = () => {
     const { user, loading, error, isInitialized, fetchUser } = useUserContext();
@@ -181,7 +181,7 @@ const UserAccount = () => {
                             onMouseEnter={() => setShowJuniorTooltip(true)}
                             onMouseLeave={() => setShowJuniorTooltip(false)}
                         >
-                            ⓘ
+                            <InfoIcon />
                             {showJuniorTooltip && (
                                 <div className={styles.tooltip}>
                                     Enabling this will prioritize companies that hire junior developers in your feed.
@@ -205,7 +205,7 @@ const UserAccount = () => {
                     </div>
                 </div>
                 <p className={styles.juniorDescription}>
-                    We'll show you companies that we believe hire junior developers.
+                    Target companies that <b>do</b> hire junior developers.
                 </p>
             </div>
 
