@@ -251,7 +251,7 @@ export const addLocation = onCall({timeoutSeconds: 900, memory: "4GiB"}, async (
             .insert([{
                 user_id: userId,
                 location_id: newLocation.id,
-                localized_formatted_address: location.formatted_address,
+                localized_formatted_address: location.localized_formatted_address,
             }]);
         if (error) {
             throw error;

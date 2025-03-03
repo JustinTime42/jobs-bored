@@ -205,7 +205,7 @@ const UserAccount = () => {
                     </div>
                 </div>
                 <p className={styles.juniorDescription}>
-                    We'll try to show you companies that we believe hire junior developers.
+                    We'll show you companies that we believe hire junior developers.
                 </p>
             </div>
 

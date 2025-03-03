@@ -49,7 +49,7 @@ export default function Index() {
 
       <section className={styles.mentorSection}>
         <div className={styles.videoContainer}>
-          <video className={styles.video} width="100%" src="https://xt8tecpsdo3psbjx.public.blob.vercel-storage.com/intro-TM9DpnvRCM6lrscoSs8W5cHfXMZpYK" autoPlay controls/>
+          <video className={styles.video} width="100%" src="https://xt8tecpsdo3psbjx.public.blob.vercel-storage.com/intro-TM9DpnvRCM6lrscoSs8W5cHfXMZpYK" controls/>
         </div>
 
         <div className={styles.mentorship}>
