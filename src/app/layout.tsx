@@ -19,7 +19,7 @@ export const metadata = {
     siteName: "Jobs Bored",
     images: [
       {
-        url: "/logo.png",
+        url: `${defaultUrl}/linkedin-image.png`,
         width: 1200,
         height: 630,
         alt: "Jobs Bored - Tools to help you get a job in tech",
@@ -28,6 +28,18 @@ export const metadata = {
     locale: "en_US",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Jobs Bored",
+    description: "Tools to help you get a job in tech",
+    images: [`${defaultUrl}/linkedin-image.png`],
+  },
+  other: {
+    "linkedin:card": "summary_large_image",
+    "linkedin:title": "Jobs Bored",
+    "linkedin:description": "Tools to help you get a job in tech",
+    "linkedin:image": `${defaultUrl}/linkedin-image.png`,
+  }
 };
 
 const inter = Inter({
