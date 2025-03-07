@@ -6,6 +6,63 @@ import * as cheerio from "cheerio";
 import {CloudTasksClient} from "@google-cloud/tasks";
 const tasksClient = new CloudTasksClient();
 
+
+// List of common technologies used in web and software development
+const technologies = [
+    // Programming Languages
+    "JavaScript", "TypeScript", "Python", "Java", "C#", "C++", "Ruby", "PHP", "Go", "Rust", "Swift", "Kotlin", "Scala",
+    // Frontend Frameworks/Libraries
+    "React", "Angular", "Vue", "Svelte", "Next", "Nuxt", "Gatsby",
+    "jQuery", "Ember", "Backbone", "Redux", "MobX",
+    "Zustand", "Jotai", "Recoil", "React Query", "SWR", "Tailwind", "Bootstrap",
+    "Material UI", "Chakra UI", "Styled Components",
+
+    // Backend Frameworks
+    "Node", "Express", "Django", "Flask", "Spring", "ASP.NET", "Laravel",
+    "Ruby on Rails", "FastAPI", "NestJS", "Strapi",
+    "Koa", "Hapi", "Adonis", "Meteor", "Sails", "Feathers",
+
+    // Databases
+    "MongoDB", "PostgreSQL", "MySQL", "SQLite", "Oracle", "SQL", "Redis", "Elasticsearch", "Cassandra", "DynamoDB",
+    "Firebase", "Supabase", "Fauna", "Neo4j", "CouchDB", "MariaDB",
+
+    // Cloud Providers
+    "AWS", "Azure", "Google Cloud", "Heroku", "DigitalOcean", "Vercel", "Netlify", "Cloudflare", "Linode", "Vultr",
+
+    // DevOps/Tools
+    "Docker", "Kubernetes", "Jenkins", "Travis CI", "CircleCI", "GitHub Actions",
+    "GitLab CI", "Terraform", "Ansible", "Puppet",
+    "Chef", "Prometheus", "Grafana", "ELK Stack", "Nginx", "Apache",
+
+    // Mobile
+    "React Native", "Flutter", "Ionic", "Xamarin", "Cordova", "Capacitor",
+    "SwiftUI", "UIKit", "Kotlin Multiplatform",
+
+    // Testing
+    "Jest", "Mocha", "Chai", "Cypress", "Selenium", "Puppeteer", "Playwright",
+    "TestCafe", "Enzyme", "React Testing Library",
+    "JUnit", "PyTest", "PHPUnit", "RSpec",
+
+    // Other
+    "GraphQL", "REST API", "WebSockets", "gRPC", "Kafka", "RabbitMQ", "WebRTC",
+    "PWA", "Electron", "Tauri", "WebAssembly",
+    "Blockchain", "Ethereum", "Solidity", "Web3", "AI", "Machine Learning",
+    "TensorFlow", "PyTorch", "NLP", "Computer Vision",
+];
+console.log(technologies);
+// /**
+//  * Detects technologies mentioned in a text string
+//  * @param text The text to analyze for technology mentions
+//  * @returns Array of detected technologies
+//  */
+// const detectTechnologies = (text: string): string[] => {
+//     if (!text) return [];
+
+//     const normalizedText = text.toLowerCase();
+//     return technologies.filter(tech =>
+//         normalizedText.includes(tech.toLowerCase())
+//     );
+// };
 const validOrganizationKeys = [
     "id",
     "name",
@@ -17,6 +74,7 @@ const validOrganizationKeys = [
     "sanitized_phone",
     "founded_year",
     "market_cap",
+    "technologies",
 ];
 
 const validPersonKeys = [
@@ -227,7 +285,7 @@ export const addLocation = onCall({timeoutSeconds: 900, memory: "4GiB"}, async (
         const {data: existingLocation, error: locationError} = await supabaseAdmin
             .from("locations")
             .select("*")
-            .eq("formatted_address", location.formatted_address)
+            .eq("formatted_address", location.formatted_address.toLowerCase())
             .maybeSingle();
         if (locationError) {
             throw locationError;

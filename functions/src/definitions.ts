@@ -149,6 +149,7 @@ export interface Organization {
     state: string;
     country: string;
     postal_code: string;
+    technologies?: string[];
   }
 export type {
     ApolloResponse,

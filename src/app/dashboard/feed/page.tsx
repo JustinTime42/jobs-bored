@@ -34,15 +34,17 @@ const Feed = () => {
     const [hasMore, setHasMore] = useState(true);
     const isMobile = useMediaQuery({ maxWidth: 1200 });
     const lastOrganizationRef = useCallback((node: HTMLDivElement) => {
-        if (orgLoading) return;
+        if (orgLoading || !hasMore || !node) return;
+        
         if (observer.current) observer.current.disconnect();
+        
         observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting) {
+            if (entries[0].isIntersecting && !orgLoading) {
                 handleFetchMore(organizations, user, filters, hasMore);
             }
-            if (node) observer.current?.observe(node);
         });
-        if (node) observer.current.observe(node);
+        
+        observer.current.observe(node);
     }, [orgLoading, hasMore, user, filters, organizations]);
 
     useEffect(() => {
