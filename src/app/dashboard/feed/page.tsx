@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useUserContext } from "../../context/UserContext";
-import { useRouter } from 'next/navigation';
 import { Organization } from "@/src/definitions";
 import ExternalLink from "@/src/components/Link/ExternalLink";
 import CompanyCard from "@/src/components/company_card/CompanyCard";
@@ -32,6 +31,7 @@ const Feed = () => {
     const [activeOrganization, setActiveOrganization] = useState<Organization | undefined>(undefined);
     const [orgLoading, setOrgLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [endReached, setEndReached] = useState(false);
     const isMobile = useMediaQuery({ maxWidth: 1200 });
     const lastOrganizationRef = useCallback((node: HTMLDivElement) => {
         if (orgLoading || !hasMore || !node) return;
@@ -39,13 +39,13 @@ const Feed = () => {
         if (observer.current) observer.current.disconnect();
         
         observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && !orgLoading) {
+            if (entries[0].isIntersecting && !orgLoading && hasMore && !endReached) {
                 handleFetchMore(organizations, user, filters, hasMore);
             }
         });
         
         observer.current.observe(node);
-    }, [orgLoading, hasMore, user, filters, organizations]);
+    }, [orgLoading, hasMore, user, filters, organizations, endReached]);
 
     useEffect(() => {
         if (user) {
@@ -75,6 +75,8 @@ const Feed = () => {
     const handleFetch = async (currentFilters:any) => {
         console.log("currentFilters", currentFilters)
         setOrgLoading(true);
+        setEndReached(false);
+        setHasMore(true);
         try {
             const data = await fetchOrganizations({...currentFilters}, user);
             setOrganizations(data);
@@ -87,21 +89,20 @@ const Feed = () => {
     };
 
     const handleFetchMore = async (organizations: Organization[], user: any, filters: any, hasMore: boolean) => {
-
-        if (!hasMore) return;
+        if (!hasMore || endReached) return;
         if (orgLoading) return;
+        
         setOrgLoading(true);
         const data = await fetchMoreOrganizations(organizations, user, filters);
         console.log("data", data)
-        if (data && data.length === 0) {
+        
+        if (!data || data.length === 0) {
             setHasMore(false);
-            setTimeout(() => {
-                setHasMore(true)
-            }, 2000)
-        }
-        if (data?.length > 0) {
+            setEndReached(true);
+        } else {
             setOrganizations((prev) => [...prev, ...data]);
         }
+        
         setOrgLoading(false);
     };
 
@@ -186,6 +187,7 @@ const Feed = () => {
             ))}
             <div className={styles.loadMore}>
                 {orgLoading && <p>Loading more...</p>}
+                {endReached && <p>All organizations loaded</p>}
             </div>
         </div>
     ) : (
@@ -211,14 +213,15 @@ const Feed = () => {
                         />
                     </div>
                 ))}
+                <div className={styles.loadMore}>
+                    {orgLoading && <p>Loading more...</p>}
+                    {endReached && <p>All organizations loaded</p>}
+                </div>
             </div>
             <div className={styles.details}>
                 {activeOrganization && (
                     <CompanyDetails company={activeOrganization} userId={user.id} isActive />
                 )}
-            </div>
-            <div className={styles.loadMore}>
-                {orgLoading && <p>Loading more...</p>}
             </div>
             </div>
         </div>

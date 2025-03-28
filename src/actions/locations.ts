@@ -23,25 +23,51 @@ export const addLocation = async (location: any, userId: string) => {
 } 
 
 export const populateOrganizations = async () => {
+    const processOrganizations = async () => {
+        const populateOrganizations = httpsCallable(functions, 'populateOrganizations');
+        const { data, error } = await supabaseAdmin
+        .from('organizations')
+        .select('*')
+        .eq('fetched_people', false)
+        .limit(500);
+        
+        console.log("Number of companies selected:", data?.length);
+        if (error) {
+            throw error;
+        }
 
-    const populateOrganizations = httpsCallable(functions, 'populateOrganizations');
-    const { data, error } = await supabaseAdmin
-    .from('organizations')
-    .select('*')
-    .eq('fetched_people', false)
-    .gt('size', 0)
-    .lt('size', 5)
-    .not('website_url', 'is', null)
-    .limit(500);
-    console.log("Number of companies selected:", data?.length);
-    if (error) {
-        throw error;
+        // If no data or empty array, stop the process
+        if (!data || data.length === 0) {
+            console.log("No more organizations to process. Stopping.");
+            return false;
+        }
+
+        const results = await populateOrganizations({organizationIds: data.map((org: any) => org.id)});
+        console.log(results);
+        return true;
+    };
+
+    // Initial run
+    let shouldContinue = await processOrganizations();
+    
+    // Set up interval to run every 5 minutes if there are still organizations to process
+    if (shouldContinue) {
+        const intervalId = setInterval(async () => {
+            try {
+                shouldContinue = await processOrganizations();
+                if (!shouldContinue) {
+                    console.log("Process completed. Clearing interval.");
+                    clearInterval(intervalId);
+                }
+            } catch (error) {
+                console.error("Error in scheduled organization processing:", error);
+                clearInterval(intervalId);
+            }
+        }, 5 * 60 * 1000); // 5 minutes in milliseconds
+        
+        // Return the interval ID in case you want to clear it externally
+        return intervalId;
     }
-
-    const results = await populateOrganizations({organizationIds: data.map((org: any) => org.id)});
-    console.log(results);
-    return results;
-
 }
 
 // moved all the below to firebase functions

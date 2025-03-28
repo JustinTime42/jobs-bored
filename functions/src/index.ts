@@ -49,20 +49,19 @@ const technologies = [
     "Blockchain", "Ethereum", "Solidity", "Web3", "AI", "Machine Learning",
     "TensorFlow", "PyTorch", "NLP", "Computer Vision",
 ];
-console.log(technologies);
 // /**
 //  * Detects technologies mentioned in a text string
 //  * @param text The text to analyze for technology mentions
 //  * @returns Array of detected technologies
 //  */
-// const detectTechnologies = (text: string): string[] => {
-//     if (!text) return [];
+const detectTechnologies = (text: string): string[] => {
+    if (!text) return [];
 
-//     const normalizedText = text.toLowerCase();
-//     return technologies.filter(tech =>
-//         normalizedText.includes(tech.toLowerCase())
-//     );
-// };
+    const normalizedText = text.toLowerCase();
+    return technologies.filter(tech =>
+        normalizedText.includes(tech.toLowerCase())
+    );
+};
 const validOrganizationKeys = [
     "id",
     "name",
@@ -485,6 +484,11 @@ export const savePeople = async (people: any[]) => {
             throw error;
         }
 
+        // Process each person to detect tech keywords and update organization technologies
+        for (const person of people) {
+            await detectTechKeywordsAndUpdateOrg(person);
+        }
+
         return data;
     } catch (e) {
         console.error(`Failed to save people: ${JSON.stringify(e)}`);
@@ -554,11 +558,10 @@ export const scrapeEmails = onCall({timeoutSeconds: 300, memory: "4GiB"}, async 
     console.log("Scraping emails for websites:", websites);
     try {
         const result = await enqueueScrapingTasks(websites);
-        console.log("Enqueue result:", result);
-        return {message: "Email scraping tasks enqueued"};
+        return result;
     } catch (e) {
         console.error("Error scraping emails:", e);
-        return [];
+        throw new Error("Internal Server Error");
     }
 });
 
@@ -829,3 +832,72 @@ function cleanEmail(email: string, domain: string, commonTlds: string[]): string
 function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export const detectTechKeywordsAndUpdateOrg = async (person: Person) => {
+    if (!person.organization_id || (!person.headline && !person.title)) {
+        return;
+    }
+
+    // Combine headline and title for searching
+    const textToSearch = `${person.headline || ''} ${person.title || ''}`.toLowerCase();
+    
+    // Find matching tech keywords
+    const matchedTech = technologies.filter(tech => 
+        textToSearch.includes(tech.toLowerCase())
+    );
+
+    if (matchedTech.length === 0) {
+        return;
+    }
+
+    console.log(`Found tech keywords for person ${person.name}: ${matchedTech.join(', ')}`);
+
+    try {
+        // Update the organization with the new technologies in a single operation
+        const supabaseAdmin = createAdminClient();
+        
+        // Using a raw SQL query to append technologies that don't already exist in the array
+        const { error: updateError } = await supabaseAdmin.rpc(
+            'append_unique_technologies',
+            { 
+                org_id: person.organization_id,
+                new_technologies: matchedTech
+            }
+        );
+
+        if (updateError) {
+            console.error(`Error updating technologies for organization ${person.organization_id}:`, updateError);
+            
+            // Fallback to the two-step approach if the RPC fails
+            const { data: orgData, error: orgError } = await supabaseAdmin
+                .from("organizations")
+                .select("technologies")
+                .eq("id", person.organization_id)
+                .single();
+
+            if (orgError) {
+                console.error(`Error fetching organization ${person.organization_id}:`, orgError);
+                return;
+            }
+
+            // Combine existing technologies with newly found ones
+            const existingTech = orgData.technologies || [];
+            const updatedTech = Array.from(new Set([...existingTech, ...matchedTech]));
+
+            // Update the organization with the new technologies
+            const { error: fallbackError } = await supabaseAdmin
+                .from("organizations")
+                .update({ technologies: updatedTech })
+                .eq("id", person.organization_id);
+
+            if (fallbackError) {
+                console.error(`Error in fallback update for organization ${person.organization_id}:`, fallbackError);
+                return;
+            }
+        } else {
+            console.log(`Updated technologies for organization ${person.organization_id}: ${matchedTech.join(', ')}`);
+        }
+    } catch (e) {
+        console.error(`Failed to update organization technologies: ${e}`);
+    }
+};

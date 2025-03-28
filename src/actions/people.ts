@@ -20,6 +20,12 @@ export const savePeople = async (people: any[]) => {
             throw error;
         }
 
+        // Instead of directly calling the Firebase function, we'll handle this server-side
+        // or we can call a separate server action if needed
+        // for (const person of peopleWithoutOrg) {
+        //     await detectTechKeywordsAndUpdateOrg(person);
+        // }
+
         return data;
     } catch (e) {
         console.error(`Failed to save people: ${JSON.stringify(e)}`);

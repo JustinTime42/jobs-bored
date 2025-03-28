@@ -178,6 +178,12 @@ export const getCompanyPeople = async (company_id: string) => {
 			throw dbResponse.error;
 		}
 		const people = dbResponse.data;
+		
+		// Process each person to detect tech keywords and update organization technologies
+		for (const person of cleanPeople) {
+			// Removed the call to detectTechKeywordsAndUpdateOrg
+		}
+		
 		return people
 
 	}
