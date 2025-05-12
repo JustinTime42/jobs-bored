@@ -49,11 +49,11 @@ const Feed = () => {
 
     useEffect(() => {
         if (user) {
-            console.log('User object in Feed:', {
-                id: user.id,
-                is_junior: user.is_junior,
-                locations: user.locations?.map((l: any) => ({ id: l.id, locality: l.locality }))
-            });
+            // console.log('User object in Feed:', {
+            //     id: user.id,
+            //     is_junior: user.is_junior,
+            //     locations: user.locations?.map((l: any) => ({ id: l.id, locality: l.locality }))
+            // });
             
             setFilters(prev => ({
                 ...prev,
@@ -68,19 +68,13 @@ const Feed = () => {
         }
     }, [user, userLoading]);
 
-    useEffect(() => {
-        console.log("filters", filters)
-    }, [filters])
-
     const handleFetch = async (currentFilters:any) => {
-        console.log("currentFilters", currentFilters)
         setOrgLoading(true);
         setEndReached(false);
         setHasMore(true);
         try {
             const data = await fetchOrganizations({...currentFilters}, user);
             setOrganizations(data);
-            console.log("data", data)
             setOrgLoading(false);
         } catch (error) {
             console.error("Error fetching organizations:", error);
@@ -94,7 +88,6 @@ const Feed = () => {
         
         setOrgLoading(true);
         const data = await fetchMoreOrganizations(organizations, user, filters);
-        console.log("data", data)
         
         if (!data || data.length === 0) {
             setHasMore(false);
@@ -134,7 +127,6 @@ const Feed = () => {
     };
 
     const handleAccordionChange = (orgId: string) => {
-        console.log("orgId", orgId)
         if (activeOrganization?.id === orgId) {
             setActiveOrganization(undefined);
         } else {

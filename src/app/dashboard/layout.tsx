@@ -16,7 +16,6 @@ export default function Layout({ children }: Props) {
     if (!isInitialized || loading) return;
 
     if (!user) {
-      console.log("test")
       router.push('/');
       return;
     }

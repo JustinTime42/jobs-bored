@@ -28,17 +28,14 @@ const CompanyDetails = ( { company, userId, isActive  }: { company: Organization
     const supabase = createClient();
 
     useEffect(() => {
-        console.log("isActive", isActive)
         if (isActive){
             setIsLoading(true);
             getCompanyDetails(company.id, userId).then((data) => {
-                console.log(data)
                 setCompanyDetails(data);
                 setHideMoreButton(data.fetched_people || false);
                 setIsFavorite(data.user_organizations?.find((org) => org.user_id === userId) || false);
             });
             getPeopleInOrganization(company.id).then((data) => {
-                console.log("people", data)
                 setPeople(data);
                 setIsLoading(false);
             });

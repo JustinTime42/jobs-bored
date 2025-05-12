@@ -28,10 +28,6 @@ export default function AuthButton() {
     }
   }, [user]);
 
-  useEffect(() => {
-    console.log('user', user)
-  }, [user])
-
   const handleLogout = async () => {
     try {
       await signOutUser();

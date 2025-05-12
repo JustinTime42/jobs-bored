@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
     const subscription = event.data.object as Stripe.Subscription;
     if (subscription.status === 'incomplete') return NextResponse.json({ received: true }, { status: 200 });
-    console.log(subscription);
+    // console.log(subscription);
     const { error } = await supabaseAdmin
       .from('users')
       .update({ subscription_status: subscription.status, stripe_subscription_id: subscription.id })

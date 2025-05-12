@@ -23,10 +23,7 @@ const useLocalOrganizations = (locations: any[],  filters: FiltersState) => {
         try {
             const locationIds = locations.length > 0 ? locations.map(l => l.id) : null;            
             const localities = filters.localities ? filters.localities : null;
-            console.log("Localities", localities)
-            console.log(filters)
             const data = await getLocalOrganizations(locationIds, filters.userId || null, localities, filters.page_size, filters.previous_score, filters.previous_id);
-            console.log(data)
             setOrganizations(data);
         } catch (error) {
             setError(error);
@@ -36,7 +33,6 @@ const useLocalOrganizations = (locations: any[],  filters: FiltersState) => {
     };
 
     useEffect(() => {
-        console.log("filters", filters)
         fetchOrganizations();
     }, [locations, filters.userId, filters.localities]);
 

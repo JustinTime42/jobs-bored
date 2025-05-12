@@ -108,7 +108,7 @@ export const getPersonEmail = async (id: string) => {
 		});
 		const responseData = await response.json();
 		const emailAddress = responseData.person.email;
-		console.log('Email:', emailAddress);
+		// console.log('Email:', emailAddress);
 		if (!emailAddress) {
 			await supabaseAdmin
 			.from('people').update({email: 'Email Unavailable'}).eq('id', id);

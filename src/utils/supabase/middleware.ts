@@ -57,8 +57,6 @@ export async function updateSession(request: NextRequest) {
       .eq('id', user?.id)
       .single();
 
-    console.log("middleware profile", profile)
-
     const isTrialActive = new Date(profile?.trial_ends_at) > new Date();
     const isPaid = profile?.subscription_status === 'active';
   
